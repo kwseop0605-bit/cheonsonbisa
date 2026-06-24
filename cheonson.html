@@ -190,7 +190,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 .eq-slot-item{font-size:.8rem;color:var(--gold2);font-weight:600}
 .eq-slot-item.empty{color:var(--text3);font-weight:400}
 .inv-grid{display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--border);border-radius:3px;overflow:hidden;background:var(--border)}
-.inv-slot{width:80px;height:80px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;transition:background .12s;position:relative;border-right:1px solid var(--border);border-bottom:1px solid var(--border);box-sizing:border-box;flex-shrink:0}
+.inv-slot{width:120px;height:120px;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:2.2rem;cursor:pointer;transition:background .12s;position:relative;border-right:1px solid var(--border);border-bottom:1px solid var(--border);box-sizing:border-box;flex-shrink:0}
 .inv-slot:hover{background:var(--bg2)}
 .item-cnt{font-size:.78rem;font-weight:700;color:var(--gold2);line-height:1;margin-top:2px}
 .mat-list{display:flex;flex-wrap:wrap;gap:.3rem}
@@ -1792,11 +1792,11 @@ function startGame(){
   document.getElementById('view-battle').style.display='none';
   document.getElementById('fullmap').style.display='none';
   G.curZone=null; G.curMonType=null;
-  // 사냥터 탭 명시적 활성화
+  // 마을 탭 명시적 활성화 (첫 화면)
   document.querySelectorAll('.content-area').forEach(e=>e.classList.remove('active'));
-  document.getElementById('tab-hunt').classList.add('active');
+  document.getElementById('tab-village').classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
-  document.querySelectorAll('.tab-btn')[0]?.classList.add('active');
+  document.querySelectorAll('.tab-btn')[5]?.classList.add('active');
   // 캐릭터 SVG
   // 캐릭터 이미지 (사이드바 = normal)
   const charSvg = document.getElementById('char-svg');
@@ -1815,9 +1815,9 @@ function startGame(){
   const hasHomi = G.inventory.some(i=>i&&i.name==='호미');
   const hasPick = G.inventory.some(i=>i&&i.name==='곡괭이');
   const hasAxe  = G.inventory.some(i=>i&&i.name==='도끼');
-  if(!hasHomi) addToInventory({name:'호미',   icon:'🪛', type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-  if(!hasPick) addToInventory({name:'곡괭이', icon:'⛏️', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-  if(!hasAxe)  addToInventory({name:'도끼',   icon:'🪓', type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  if(!hasHomi) addToInventory({name:'호미',   icon:'images/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  if(!hasPick) addToInventory({name:'곡괭이', icon:'images/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  if(!hasAxe)  addToInventory({name:'도끼',   icon:'images/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
   // 재료창고에 실수로 들어간 도구 제거
   ['호미','곡괭이','도끼'].forEach(n=>{ if(G.mats[n]) delete G.mats[n]; });
   // 오프라인 생산 계산
@@ -3730,10 +3730,13 @@ function renderInv(){
     const d=document.createElement('div'); d.className='inv-slot';
     const item=G.inventory[i];
     if(item){
+      const iconHtml = item.icon && item.icon.startsWith('images/')
+        ? `<img src="${item.icon}" style="width:3.2rem;height:3.2rem;object-fit:contain" draggable="false">`
+        : `<span style="font-size:2.6rem;line-height:1">${item.icon||'📦'}</span>`;
       d.innerHTML=`
-        <span style="font-size:1.3rem;line-height:1">${item.icon||'📦'}</span>
+        ${iconHtml}
         <span class="item-cnt">${item.qty||1}</span>
-        <span style="position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:.52rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 2px;line-height:1.2">${item.name}</span>
+        <span style="position:absolute;bottom:4px;left:0;right:0;text-align:center;font-size:.72rem;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;line-height:1.2">${item.name}</span>
       `;
       if(item.type==='skillbook') d.style.borderColor='#c9922a';
       if(item.type==='tool' && (item.dur||0)<=0) d.style.borderColor='#c0392b';
@@ -3802,7 +3805,10 @@ function renderEquipSlots(){
     }
     const finalItem = G.equippedTools[skill]!=null ? G.inventory[G.equippedTools[skill]] : null;
     if(finalItem && finalItem.type==='tool' && finalItem.skill===skill){
-      nameEl.textContent=`${finalItem.name} (${finalItem.dur||0}/${finalItem.maxDur||0})`;
+      const iconHtml = finalItem.icon && finalItem.icon.startsWith('images/')
+        ? `<img src="${finalItem.icon}" style="width:1.2rem;height:1.2rem;object-fit:contain;vertical-align:middle;margin-right:3px" draggable="false">`
+        : `${finalItem.icon||''} `;
+      nameEl.innerHTML=`${iconHtml}${finalItem.name} (${finalItem.dur||0}/${finalItem.maxDur||0})`;
       nameEl.className='eq-slot-item';
       slotEl?.classList.add('filled');
     } else {
@@ -4193,20 +4199,22 @@ function showItemPopup(invIdx, event){
   tip.style.cssText = `
     position:fixed;z-index:9999;
     background:#110d08;border:1px solid #c9922a;border-radius:6px;
-    padding:.7rem .9rem;width:170px;
+    padding:1rem 1.2rem;width:280px;
     box-shadow:0 4px 20px rgba(0,0,0,.8);
     pointer-events:auto;
   `;
   tip.onclick = e=>e.stopPropagation();
   tip.innerHTML = `
     <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem">
-      <span style="font-size:1.6rem;line-height:1">${item.icon||'📦'}</span>
+    ${item.icon && item.icon.startsWith('images/')
+        ? `<img src="${item.icon}" style="width:5rem;height:5rem;object-fit:contain" draggable="false">`
+        : `<span style="font-size:4rem;line-height:1">${item.icon||'📦'}</span>`}
       <div>
-        <div style="font-size:.8rem;font-weight:600;color:#e8b84b">${item.name}</div>
-        <div style="font-size:.58rem;color:#888">${typeStr}</div>
+        <div style="font-size:1rem;font-weight:600;color:#e8b84b">${item.name}</div>
+        <div style="font-size:.72rem;color:#888">${typeStr}</div>
       </div>
     </div>
-    <div style="font-size:.68rem;color:#ccc;line-height:1.7">${descHTML}</div>
+    <div style="font-size:.82rem;color:#ccc;line-height:1.8">${descHTML}</div>
     ${btnsHTML}
   `;
 
@@ -4239,14 +4247,15 @@ function useBerry(name){
   const ef = BERRY_EFFECTS[name];
   if(!ef){ toast('알 수 없는 열매!'); return; }
   const c = G.char;
+  const iconStr = item.icon && item.icon.startsWith('images/') ? '🌿' : (item.icon||'🌿');
   if(ef.type==='hp'){
     const heal = ef.pct ? Math.floor(c.mhp*ef.pct) : ef.val;
     c.hp = Math.min(c.mhp, c.hp+heal);
-    toast(`${item.icon} ${name} 섭취! HP +${heal}`);
+    toast(`${iconStr} ${name} 섭취! HP +${heal}`);
   } else {
     const heal = ef.pct ? Math.floor(c.mmp*ef.pct) : ef.val;
     c.mp = Math.min(c.mmp, c.mp+heal);
-    toast(`${item.icon} ${name} 섭취! MP +${heal}`);
+    toast(`${iconStr} ${name} 섭취! MP +${heal}`);
   }
   item.qty = (item.qty||1) - 1;
   if(item.qty <= 0){
@@ -5899,7 +5908,9 @@ function renderForgeRepair(){
     const fullDur = (item.dur||0) >= (item.maxDur||0);
     return `
     <div style="display:flex;align-items:center;gap:.5rem;padding:.45rem .2rem;border-bottom:1px solid var(--border)">
-      <span style="font-size:1.3rem">${item.icon||'🔧'}</span>
+      ${item.icon && item.icon.startsWith('images/')
+        ? `<img src="${item.icon}" style="width:1.3rem;height:1.3rem;object-fit:contain" draggable="false">`
+        : `<span style="font-size:1.3rem">${item.icon||'🔧'}</span>`}
       <div style="flex:1">
         <div style="font-size:.78rem;font-weight:600;color:var(--text)">${item.name}
           ${item.repairable===false?`<span style="font-size:.58rem;color:#e74c3c;margin-left:.3rem">수리불가</span>`:''}
