@@ -16,7 +16,62 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 
-/* 대장간 화살표 안내 */
+/* 채집터 탭 화살표 */
+#gather-arrow{
+  position:fixed;display:none;z-index:9000;
+  font-size:2.5rem;color:#4aaf5a;
+  filter:drop-shadow(0 0 8px rgba(74,175,90,0.8));
+  pointer-events:none;
+  animation:arrow-up-bounce .7s infinite alternate;
+}
+#gather-arrow-label{
+  position:fixed;display:none;z-index:9000;
+  background:rgba(0,0,0,0.9);color:#4aaf5a;
+  font-size:.82rem;padding:.35rem .75rem;border-radius:4px;
+  border:1px solid #4aaf5a;pointer-events:none;white-space:nowrap;
+}
+#shindansu-arrow{
+  position:fixed;display:none;z-index:8050;
+  font-size:3rem;color:#e8b84b;
+  left:38%;top:20%;
+  filter:drop-shadow(0 0 10px rgba(232,184,75,0.9));
+  pointer-events:none;
+  animation:arrow-up-bounce .7s infinite alternate;
+}
+#shindansu-arrow-label{
+  position:fixed;display:none;z-index:8050;
+  left:33%;top:30%;
+  background:rgba(0,0,0,0.88);color:#e8b84b;
+  font-size:.82rem;padding:.35rem .75rem;border-radius:4px;
+  border:1px solid #c9922a;pointer-events:none;white-space:nowrap;
+}
+/* 인벤토리 착용 안내 팁 */
+#inv-equip-tip{
+  display:none;
+  background:rgba(201,146,42,0.15);
+  border:1px solid #c9922a;border-radius:4px;
+  padding:.5rem .8rem;margin-bottom:.6rem;
+  font-size:.78rem;color:#e8b84b;text-align:center;
+  animation:tab-pulse 1.5s infinite;
+}
+#inv-arrow{
+  position:fixed;display:none;z-index:9000;
+  font-size:2.5rem;color:#e8b84b;
+  filter:drop-shadow(0 0 8px rgba(232,184,75,0.8));
+  pointer-events:none;
+  animation:arrow-up-bounce .7s infinite alternate;
+}
+@keyframes arrow-up-bounce{
+  0%{transform:translateY(0)}
+  100%{transform:translateY(-8px)}
+}
+#inv-arrow-label{
+  position:fixed;display:none;z-index:9000;
+  background:rgba(0,0,0,0.9);color:#e8b84b;
+  font-size:.82rem;padding:.35rem .75rem;border-radius:4px;
+  border:1px solid #c9922a;pointer-events:none;
+  white-space:nowrap;
+}
 #forge-arrow{
   position:fixed;display:none;z-index:8050;
   left:14%;top:38%;
@@ -66,9 +121,11 @@
 #tutorial-next{
   display:block;
   margin:1rem auto 0;
-  font-size:.85rem;color:#c9922a;border:1px solid #c9922a;
-  background:none;padding:.4rem 2rem;cursor:pointer;border-radius:3px;
+  font-size:.9rem;font-weight:700;color:#1a1200;
+  background:#e8b84b;border:none;
+  padding:.5rem 3rem;cursor:pointer;border-radius:4px;
   opacity:0;transition:opacity .3s;
+  letter-spacing:.1em;
 }
 #tutorial-next.show{opacity:1}
 /* 탭 강조 화살표 */
@@ -563,6 +620,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
             <button class="btn" onclick="sortInventory()" style="margin-left:.5rem;font-size:.6rem;padding:.2rem .5rem;background:rgba(30,50,80,.8);border-color:#2a5a9a;color:#6a9ad0">정렬</button>
             <button class="btn" onclick="expandBag()" id="bag-expand-btn" style="margin-left:auto;font-size:.6rem;padding:.2rem .5rem">＋확장 <span id="bag-expand-cost">500냥</span></button>
           </div>
+          <!-- 튜토리얼 착용 안내 팁 -->
+          <div id="inv-equip-tip">⚒️ 도구를 더블클릭하거나 우클릭하여 착용하세요!</div>
           <div class="inv-grid" id="inv-grid"></div>
         </div>
         <div class="panel">
@@ -637,27 +696,44 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 
             <!-- 대장간 패널 -->
             <div id="panel-forge" style="display:none">
-              <!-- 대장간 배경 이미지 -->
-              <div id="forge-bg" style="width:100%;height:220px;background:url('images/bg/forge_welcome.jpg') center/cover no-repeat;border-radius:6px;margin-bottom:.6rem;border:1px solid var(--border)"></div>
-              <div class="panel">
-                <div class="panel-title">🔨 대장간
-                  <span style="margin-left:auto;font-size:.65rem;color:var(--gold2)">보유: <span id="village-gold">0</span>냥</span>
+              <!-- 전체화면 대장간 배경 (항상 welcome) -->
+              <div id="forge-bg" style="position:absolute;inset:0;background:url('images/bg/forge_welcome.jpg') center/cover no-repeat;z-index:0"></div>
+              <!-- 어두운 오버레이 -->
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);z-index:1;pointer-events:none"></div>
+
+              <!-- 상단 타이틀 -->
+              <div style="position:absolute;top:1rem;left:0;right:0;text-align:center;z-index:3">
+                <div style="font-size:1.1rem;font-weight:700;color:#e8b84b;letter-spacing:.2em;text-shadow:0 0 12px rgba(232,184,75,0.8)">🔨 대장간</div>
+                <div style="font-size:.7rem;color:#ccc;margin-top:.2rem">보유: <span id="village-gold" style="color:#e8b84b">0</span>냥</div>
+              </div>
+
+              <!-- 좌측 제작 버튼 (1번 위치) -->
+              <div style="position:absolute;left:6%;top:55%;z-index:3">
+                <button onclick="showForgPanel('craft')" style="background:rgba(10,6,2,0.82);border:2px solid #c9922a;color:#e8b84b;font-size:1rem;font-weight:700;padding:.7rem 1.6rem;border-radius:6px;cursor:pointer;letter-spacing:.1em;text-shadow:0 0 8px rgba(232,184,75,0.6);box-shadow:0 0 16px rgba(201,146,42,0.4)">⚒️ 제작</button>
+              </div>
+
+              <!-- 우측 수리 버튼 (2번 위치) -->
+              <div style="position:absolute;right:6%;top:55%;z-index:3">
+                <button onclick="showForgPanel('repair')" style="background:rgba(10,6,2,0.82);border:2px solid #c9922a;color:#e8b84b;font-size:1rem;font-weight:700;padding:.7rem 1.6rem;border-radius:6px;cursor:pointer;letter-spacing:.1em;text-shadow:0 0 8px rgba(232,184,75,0.6);box-shadow:0 0 16px rgba(201,146,42,0.4)">🔧 수리</button>
+              </div>
+
+              <!-- 중앙 컨텐츠 패널 -->
+              <div id="forge-content-panel" style="display:none;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:520px;max-height:75%;overflow-y:auto;background:rgba(8,5,2,0.93);border:1px solid #c9922a;border-radius:8px;padding:1rem 1.2rem;z-index:4;box-shadow:0 0 30px rgba(201,146,42,0.3)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;border-bottom:1px solid rgba(201,146,42,0.4);padding-bottom:.5rem">
+                  <div id="forge-panel-title" style="font-size:.95rem;font-weight:700;color:#e8b84b"></div>
+                  <button onclick="document.getElementById('forge-content-panel').style.display='none';document.getElementById('forge-bg').style.backgroundImage='url(\'images/bg/forge_welcome.jpg\')'" style="background:none;border:none;color:#888;font-size:1.2rem;cursor:pointer;line-height:1">✕</button>
                 </div>
-                <div style="display:flex;gap:.4rem;padding:.4rem 0 .5rem">
-                  <button class="btn" id="forge-btn-buy"    onclick="showForge('buy')"    style="flex:1;font-size:.72rem;padding:.3rem">📦 구매</button>
-                  <button class="btn" id="forge-btn-repair" onclick="showForge('repair')" style="flex:1;font-size:.72rem;padding:.3rem">🔧 수리</button>
-                  <button class="btn" id="forge-btn-craft"  onclick="showForge('craft')"  style="flex:1;font-size:.72rem;padding:.3rem">⚒️ 제작</button>
-                </div>
-                <div id="forge-buy" style="display:none"><div id="village-tool-list"></div></div>
-                <div id="forge-repair" style="display:none">
-                  <div style="font-size:.68rem;color:var(--text3);margin-bottom:.4rem">🎒 가방에서 수리할 도구를 선택하세요</div>
-                  <div id="forge-repair-inv"></div>
-                </div>
-                <div id="forge-craft" style="display:none">
+                <!-- 제작 내용 -->
+                <div id="forge-craft-content" style="display:none">
                   <div style="font-size:.68rem;color:var(--gold2);font-weight:600;margin-bottom:.3rem">📖 제작 스킬 습득</div>
                   <div id="village-craft-skill-list-learn"></div>
                   <div style="font-size:.68rem;color:var(--gold2);font-weight:600;margin:.5rem 0 .3rem;border-top:1px solid var(--border);padding-top:.4rem">🔨 제작 목록</div>
                   <div id="village-craft-skill-list"></div>
+                </div>
+                <!-- 수리 내용 -->
+                <div id="forge-repair-content" style="display:none">
+                  <div style="font-size:.68rem;color:var(--text3);margin-bottom:.4rem">🎒 가방에서 수리할 도구를 선택하세요</div>
+                  <div id="forge-repair-inv"></div>
                 </div>
               </div>
             </div>
@@ -1848,20 +1924,25 @@ function gotoHuntFromGather(){
 const TUTORIAL_STEPS = [
   // 신단수 대화
   {speaker:'신단수', text:'...', action:'shindansu_light'},
-  {speaker:'신단수', text:'하늘의 백성 {name}야, 너는 천손임을 이제 각성하였다.'},
-  {speaker:'신단수', text:'이제 천손으로 살아갈 방법을 가르쳐주겠다.'},
-  {speaker:'신단수', text:'먼저 대장간의 불메장이를 찾아가거라. 그가 너의 첫 발걸음을 도와줄 것이다.', action:'close_and_highlight_forge'},
+  {speaker:'신단수', text:'하늘의 백성 {name}아... 마침내 네가 각성하였구나.'},
+  {speaker:'신단수', text:'이 땅에 천손의 혈맥이 깨어난 것은 오랜 세월 만의 일이로다.'},
+  {speaker:'신단수', text:'이제 천손으로 살아가는 법을 가르쳐주겠노라.'},
+  {speaker:'신단수', text:'먼저 저 대장간의 <span style="color:#e8b84b;font-weight:700">불메장이</span>를 찾아가거라.\n그가 네 첫걸음을 도와줄 것이니라.', action:'close_and_highlight_forge'},
   // 대장간 (불메장이) - 대장간 클릭 후 자동 진행
-  {speaker:'불메장이', text:'오, 천손이 오셨군요. 기다리고 있었습니다.', trigger:'forge'},
-  {speaker:'불메장이', text:'이 호미, 곡괭이, 도끼를 받으십시오. 채집과 채광, 벌목에 쓰이는 도구입니다.', action:'give_tools'},
-  {speaker:'불메장이', text:'도구는 인벤토리에서 착용하시면 됩니다. 지금 한번 해보십시오.', action:'highlight_inv'},
-  {speaker:'불메장이', text:'인벤토리 탭을 열어 호미를 더블클릭하거나 우클릭하여 착용하세요.', action:'wait_equip_homi'},
-  {speaker:'불메장이', text:'잘 하셨습니다. 나머지 곡괭이와 도끼도 같은 방법으로 착용하십시오.', action:'wait_equip_all'},
-  {speaker:'불메장이', text:'모든 도구를 착용하셨군요. 이제 신단수로 돌아가십시오.', action:'highlight_shindansu'},
+  {speaker:'불메장이', text:'신단수께서 계시를 주셔서 오랫동안 기다렸습니다.', trigger:'forge'},
+  {speaker:'불메장이', text:'이제 {name}님이 오셨군요. 어서 오십시오.'},
+  {speaker:'불메장이', text:'천손으로 살아가시는 데 도움이 될\n\'호미\', \'도끼\', \'곡괭이\'를 드리겠습니다.', action:'give_tools'},
+  {speaker:'불메장이', text:'채집, 벌목, 채광에 쓰이는 도구입니다.\n잘 간수하시길 바랍니다.'},
+  {speaker:'불메장이', text:'상단의 인벤토리 탭을 눌러보십시오.\n호미를 더블클릭하거나 우클릭하여 착용하시면 됩니다.', action:'highlight_inv_and_wait'},
+  {speaker:'불메장이', text:'허허, 잘 하셨습니다.\n나머지 곡괭이와 도끼도 같은 방법으로 착용하십시오.', action:'wait_equip_all'},
+  {speaker:'불메장이', text:'모든 도구를 갖추셨군요. 이제 준비가 되셨습니다.\n신단수께 돌아가 다음 가르침을 받으십시오.', action:'close_and_highlight_shindansu'},
   // 신단수 복귀
-  {speaker:'신단수', text:'잘 하였다. 이제 너의 천명이 시작되었노라.', trigger:'shindansu_return'},
-  {speaker:'신단수', text:'채집터로 나가 호미로 채집을 해보거라. 자연의 이치를 몸으로 익혀야 하느니라.'},
-  {speaker:'신단수', text:'천손의 길은 멀고도 험하나, 하늘이 너를 돕고 있음을 잊지 말아라.', action:'end_tutorial'},
+  {speaker:'신단수', text:'불메장이에게 호미, 도끼, 곡괭이 착용법은 잘 배웠구나.', trigger:'shindansu_return'},
+  {speaker:'신단수', text:'호미는 채집, 도끼는 벌목, 곡괭이는 채광을 할 수 있다.\n이제 직접 사용해보도록 하자.'},
+  {speaker:'신단수', text:'먼저 채집을 해보거라.\n쑥 5개를 채집해서 가져오거라.', action:'quest_gather_ssuk'},
+  // 쑥 채집 완료 후 신단수 복귀
+  {speaker:'신단수', text:'잘 하였노라.\n자연의 이치를 몸으로 느꼈느냐?', trigger:'ssuk_done'},
+  {speaker:'신단수', text:'천손의 길은 멀고도 험하나...\n하늘이 언제나 너와 함께하고 있음을 잊지 말아라.', action:'end_tutorial'},
 ];
 
 let tutStep = 0;
@@ -1899,7 +1980,7 @@ function runTutorialStep(){
   const step = TUTORIAL_STEPS[tutStep];
 
   // trigger 단계는 특정 행동 후에만 실행 (건너뜀)
-  if(step.trigger) { tutStep++; runTutorialStep(); return; }
+  if(step.trigger) { return; } // trigger 발동 대기 (tutorialTrigger에서 처리)
 
   // 화자 설정
   document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
@@ -1934,20 +2015,107 @@ function runTutorialStep(){
     });
     return;
   } else if(step.action === 'highlight_inv'){
-    // 인벤토리 탭 강조
+    // 인벤토리 탭 깜빡임 강조만 (유저가 직접 클릭해야 함)
     highlightTabBtn('inv');
-  } else if(step.action === 'wait_equip_homi'){
-    // 호미 착용 대기
-    tutWaiting = true;
-    waitForEquip('호미', ()=>{ tutWaiting=false; tutStep++; runTutorialStep(); });
+  } else if(step.action === 'highlight_inv_and_wait'){
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = null; // 착용 대기 중 다음 버튼 완전 비활성화
+        setTimeout(()=>showInvArrow(), 300);
+        tutWaiting = true;
+        waitForEquip('호미', ()=>{
+          tutWaiting = false;
+          hideInvArrow();
+          setTimeout(()=>{
+            document.getElementById('tutorial-dialog').classList.add('show');
+            nextBtn.onclick = tutorialNext; // 착용 완료 후 복원
+            tutStep++;
+            runTutorialStep();
+          }, 500);
+        });
+      };
+    });
     return;
   } else if(step.action === 'wait_equip_all'){
-    // 전체 착용 대기
-    tutWaiting = true;
-    waitForEquipAll(()=>{ tutWaiting=false; tutStep++; runTutorialStep(); });
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = null; // 착용 대기 중 완전 비활성화
+        setTimeout(()=>showInvArrow(), 300);
+        tutWaiting = true;
+        waitForEquipAll(()=>{
+          tutWaiting = false;
+          hideInvArrow();
+          setTimeout(()=>{
+            document.getElementById('tutorial-dialog').classList.add('show');
+            nextBtn.onclick = tutorialNext; // 착용 완료 후 복원
+            tutStep++;
+            runTutorialStep();
+          }, 500);
+        });
+      };
+    });
     return;
   } else if(step.action === 'highlight_shindansu'){
     highlightVillageBuilding('shindansu');
+  } else if(step.action === 'quest_gather_ssuk'){
+    // 텍스트 보여주고 → 다음 클릭 시 채집터 안내 + 쑥 5개 대기
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = tutorialNext;
+        // 채집터 탭 화살표 표시
+        setTimeout(()=>showGatherArrow(), 300);
+        // 쑥 5개 채집 대기
+        tutWaiting = true;
+        const checkSsuk = setInterval(()=>{
+          const ssukCount = (G.mats['쑥']||0) + (G.inventory.filter(i=>i&&i.name==='쑥').reduce((s,i)=>s+(i.qty||1),0));
+          if(ssukCount >= 5){
+            clearInterval(checkSsuk);
+            tutWaiting = false;
+            hideGatherArrow();
+            toast('✨ 쑥 5개 채집 완료! 신단수로 돌아가세요.');
+            // 신단수 화살표 표시
+            setTimeout(()=>{
+              showTab('village');
+              showShindansuArrow();
+              highlightVillageBuilding('shindansu');
+              tutStep++; // ssuk_done trigger로 이동
+            }, 800);
+          }
+        }, 1000);
+      };
+    });
+    return;
+  } else if(step.action === 'close_and_highlight_shindansu'){
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = tutorialNext;
+        // 마을 탭으로 이동 후 신단수 강조
+        setTimeout(()=>{
+          showTab('village');
+          closeBuildingPanel();
+          highlightVillageBuilding('shindansu');
+          showShindansuArrow();
+        }, 400);
+        tutStep++; // trigger 단계 건너뜀
+      };
+    });
+    return;
   } else if(step.action === 'end_tutorial'){
     G.tutorialDone = true;
     saveGame();
@@ -1966,8 +2134,17 @@ function runTutorialStep(){
 function typeText(text, onDone){
   if(tutTyping) clearInterval(tutTyping);
   const el = document.getElementById('tutorial-text-inner');
-  el.textContent = '';
+  el.innerHTML = '';
   document.getElementById('tutorial-next').classList.remove('show');
+  // \n → <br> 변환
+  const processedText = text.replace(/\n/g, '<br>');
+  // HTML 태그 포함 여부 확인
+  const hasHtml = processedText.includes('<');
+  if(hasHtml){
+    el.innerHTML = processedText;
+    if(onDone) onDone();
+    return;
+  }
   let i = 0;
   tutTyping = setInterval(()=>{
     el.textContent += text[i++];
@@ -1980,7 +2157,8 @@ function typeText(text, onDone){
 }
 
 function tutorialNext(){
-  if(tutTyping){ // 타이핑 중이면 바로 완성
+  if(tutWaiting) return; // 착용 대기 중엔 무시
+  if(tutTyping){
     clearInterval(tutTyping); tutTyping = null;
     const step = TUTORIAL_STEPS[tutStep];
     document.getElementById('tutorial-text-inner').textContent = 
@@ -2011,10 +2189,20 @@ function highlightVillageBuilding(building){
 }
 
 function waitForEquip(toolName, callback){
-  const check = setInterval(()=>{
+  // 현재 장착 상태 스냅샷 (이미 장착돼 있으면 무시)
+  const getEquipped = ()=>{
     const idx = G.inventory.findIndex(i=>i&&i.name===toolName);
-    const equipped = idx>=0 && G.equippedTools && Object.values(G.equippedTools).includes(idx);
-    if(equipped){ clearInterval(check); callback(); }
+    return idx>=0 && G.equippedTools && Object.values(G.equippedTools).includes(idx);
+  };
+  // 시작 시점에 이미 장착돼 있으면 해제 후 대기
+  if(getEquipped()){
+    const idx = G.inventory.findIndex(i=>i&&i.name===toolName);
+    const skill = G.inventory[idx]?.skill;
+    if(skill && G.equippedTools) G.equippedTools[skill] = null;
+    renderInv && renderInv();
+  }
+  const check = setInterval(()=>{
+    if(getEquipped()){ clearInterval(check); callback(); }
   }, 500);
 }
 
@@ -2031,6 +2219,69 @@ function waitForEquipAll(callback){
   }, 500);
 }
 
+function showInvArrow(){
+  const tabs = ['hunt','gather','char','skill','inv','village','build','quest'];
+  const invIdx = tabs.indexOf('inv');
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const invBtn = tabBtns[invIdx];
+  if(!invBtn) return;
+  const rect = invBtn.getBoundingClientRect();
+  const arrow = document.getElementById('inv-arrow');
+  const label = document.getElementById('inv-arrow-label');
+  arrow.style.left = (rect.left + rect.width/2 - 20) + 'px';
+  arrow.style.top = (rect.bottom + 4) + 'px';
+  arrow.style.display = 'block';
+  label.style.left = (rect.left + rect.width/2 - 95) + 'px';
+  label.style.top = (rect.bottom + 48) + 'px';
+  label.style.display = 'block';
+  highlightTabBtn('inv');
+  // 인벤토리 착용 팁도 표시
+  const tip = document.getElementById('inv-equip-tip');
+  if(tip) tip.style.display = 'block';
+}
+
+function hideInvArrow(){
+  document.getElementById('inv-arrow').style.display = 'none';
+  document.getElementById('inv-arrow-label').style.display = 'none';
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
+  const tip = document.getElementById('inv-equip-tip');
+  if(tip) tip.style.display = 'none';
+}
+
+function showGatherArrow(){
+  const tabs = ['hunt','gather','char','skill','inv','village','build','quest'];
+  const idx = tabs.indexOf('gather');
+  const btn = document.querySelectorAll('.tab-btn')[idx];
+  if(!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const arrow = document.getElementById('gather-arrow');
+  const label = document.getElementById('gather-arrow-label');
+  arrow.style.left = (rect.left + rect.width/2 - 20) + 'px';
+  arrow.style.top = (rect.bottom + 4) + 'px';
+  arrow.style.display = 'block';
+  label.style.left = (rect.left + rect.width/2 - 110) + 'px';
+  label.style.top = (rect.bottom + 48) + 'px';
+  label.style.display = 'block';
+  highlightTabBtn('gather');
+}
+
+function hideGatherArrow(){
+  document.getElementById('gather-arrow').style.display = 'none';
+  document.getElementById('gather-arrow-label').style.display = 'none';
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
+}
+
+function showShindansuArrow(){
+  document.getElementById('shindansu-arrow').style.display = 'block';
+  document.getElementById('shindansu-arrow-label').style.display = 'block';
+}
+
+function hideShindansuArrow(){
+  document.getElementById('shindansu-arrow').style.display = 'none';
+  document.getElementById('shindansu-arrow-label').style.display = 'none';
+  document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
+}
+
 function endTutorial(){
   document.getElementById('tutorial-overlay').classList.remove('active');
   document.getElementById('tutorial-dim').classList.remove('show');
@@ -2043,12 +2294,25 @@ function endTutorial(){
 
 // 대장간 클릭 시 튜토리얼 step 연결
 function tutorialTrigger(trigger){
-  if(G.tutorialDone) return;
+  if(G.tutorialDone) return false;
   const step = TUTORIAL_STEPS[tutStep];
   if(step && step.trigger === trigger){
     document.getElementById('tutorial-dialog').classList.add('show');
-    runTutorialStep();
+    // trigger step의 텍스트 직접 표시
+    document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = tutorialNext;
+        tutStep++;
+        runTutorialStep();
+      };
+    });
+    return true;
   }
+  return false;
 }
 
 function startGame(){
@@ -6138,8 +6402,11 @@ function openBuildingPanel(building){
   if(target) target.style.display='block';
   panel.style.display='block';
 
-  // 대장간 열릴 때 구매탭 기본 선택
-  if(building==='forge') showForge('buy');
+  // 대장간 열릴 때 렌더링
+  if(building==='forge'){
+    renderForgeRepair();
+    renderCraftList();
+  }
   // 튜토리얼 트리거
   if(!G.tutorialDone){
     if(building==='forge'){
@@ -6148,7 +6415,10 @@ function openBuildingPanel(building){
       document.getElementById('forge-arrow-label').style.display='none';
       document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
     }
-    if(building==='shindansu') tutorialTrigger('shindansu_return');
+    if(building==='shindansu'){
+      const result = tutorialTrigger('shindansu_return') || tutorialTrigger('ssuk_done');
+      hideShindansuArrow();
+    }
   }
   // 약초방 열릴 때 마을 관련 렌더
   if(building==='herb'){
@@ -6169,21 +6439,29 @@ function closeBuildingPanel(){
   if(panel) panel.style.display='none';
 }
 
-function showForge(tab){
-  ['buy','repair','craft'].forEach(t=>{
-    document.getElementById('forge-'+t).style.display = t===tab?'block':'none';
-    const btn = document.getElementById('forge-btn-'+t);
-    if(btn) btn.style.background = t===tab?'rgba(180,130,20,.3)':'';
-  });
-  // 배경 이미지 전환
+function showForgPanel(tab){
+  const panel = document.getElementById('forge-content-panel');
+  const title = document.getElementById('forge-panel-title');
+  const craft = document.getElementById('forge-craft-content');
+  const repair = document.getElementById('forge-repair-content');
   const bg = document.getElementById('forge-bg');
-  if(bg){
-    if(tab==='buy'){
-      bg.style.backgroundImage = "url('images/bg/forge_welcome.jpg')";
-    } else {
-      bg.style.backgroundImage = "url('images/bg/forge_work.jpg')";
-    }
+  // 배경 forge_work로 교체
+  if(bg) bg.style.backgroundImage = "url('images/bg/forge_work.jpg')";
+  panel.style.display = 'block';
+  if(tab === 'craft'){
+    title.textContent = '⚒️ 제작';
+    craft.style.display = 'block';
+    repair.style.display = 'none';
+    renderCraftList();
+  } else {
+    title.textContent = '🔧 수리';
+    craft.style.display = 'none';
+    repair.style.display = 'block';
+    renderForgeRepair();
   }
+}
+
+function showForge(tab){
   if(tab==='repair') renderForgeRepair();
   if(tab==='craft')  renderCraftList();
 }
@@ -7281,6 +7559,12 @@ setInterval(()=>{
 </div>
 <div id="forge-arrow">➤</div>
 <div id="forge-arrow-label">🔨 대장간을 클릭하세요!</div>
+<div id="inv-arrow">▲</div>
+<div id="inv-arrow-label">🎒 인벤토리 탭을 클릭하세요!</div>
+<div id="shindansu-arrow">▼</div>
+<div id="shindansu-arrow-label">🌳 신단수를 클릭하세요!</div>
+<div id="gather-arrow">▲</div>
+<div id="gather-arrow-label">🌿 채집터 탭을 클릭하세요! (쑥 5개 채집)</div>
 <div id="tutorial-dialog">
   <div id="tutorial-speaker">신단수</div>
   <div id="tutorial-text"><span id="tutorial-text-inner"></span><span id="tutorial-cursor">▌</span></div>
