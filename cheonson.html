@@ -16,7 +16,64 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 
-/* 마을 건물 클릭 영역 */
+/* 대장간 화살표 안내 */
+#forge-arrow{
+  position:fixed;display:none;z-index:8050;
+  left:14%;top:38%;
+  font-size:3.5rem;color:#e8b84b;
+  animation:arrow-bounce .7s infinite alternate;
+  filter:drop-shadow(0 0 8px rgba(232,184,75,0.8));
+  pointer-events:none;
+  transform:rotate(-30deg);
+}
+@keyframes arrow-bounce{
+  0%{transform:rotate(-30deg) translateX(0)}
+  100%{transform:rotate(-30deg) translateX(-12px)}
+}
+#forge-arrow-label{
+  position:fixed;display:none;z-index:8050;
+  left:8%;top:34%;
+  background:rgba(0,0,0,0.85);color:#e8b84b;
+  font-size:.85rem;padding:.4rem .8rem;border-radius:4px;
+  border:1px solid #c9922a;pointer-events:none;
+  white-space:nowrap;
+}
+#tutorial-overlay{position:fixed;inset:0;z-index:8000;pointer-events:none}
+#tutorial-overlay.active{pointer-events:none}
+/* 신단수 빛 효과 */
+#shindansu-light{
+  position:absolute;left:33%;top:0;width:16%;height:50%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,220,80,0.55) 0%,rgba(255,180,30,0.2) 40%,transparent 70%);
+  opacity:0;transition:opacity 1.5s;pointer-events:none;
+}
+#shindansu-light.show{opacity:1}
+/* 배경 어둡게 */
+#tutorial-dim{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 1.5s;pointer-events:none}
+#tutorial-dim.show{background:rgba(0,0,0,0.45)}
+/* 대화창 */
+#tutorial-dialog{
+  position:fixed;bottom:0;left:0;right:0;
+  background:linear-gradient(135deg,rgba(10,6,2,0.97),rgba(20,12,4,0.97));
+  border-top:2px solid #c9922a;padding:1.2rem 2rem 1.4rem;
+  transform:translateY(100%);transition:transform .5s ease;
+  z-index:8100;min-height:130px;
+}
+#tutorial-dialog.show{transform:translateY(0)}
+#tutorial-speaker{font-size:.8rem;color:#c9922a;font-weight:700;letter-spacing:.1em;margin-bottom:.4rem}
+#tutorial-text{font-size:1rem;color:#f0e6c8;line-height:1.8;min-height:3rem}
+#tutorial-cursor{display:inline-block;animation:blink .7s infinite;color:#c9922a;margin-left:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#tutorial-next{
+  display:block;
+  margin:1rem auto 0;
+  font-size:.85rem;color:#c9922a;border:1px solid #c9922a;
+  background:none;padding:.4rem 2rem;cursor:pointer;border-radius:3px;
+  opacity:0;transition:opacity .3s;
+}
+#tutorial-next.show{opacity:1}
+/* 탭 강조 화살표 */
+.tab-highlight{animation:tab-pulse 1s infinite}
+@keyframes tab-pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,146,42,0.7)}50%{box-shadow:0 0 0 6px rgba(201,146,42,0)}}
 .village-btn{position:absolute;cursor:pointer;border-radius:6px;border:none;transition:all .2s;display:flex;align-items:flex-end;justify-content:center;padding-bottom:.4rem}
 .village-btn:hover{background:none}
 .village-btn-label{background:rgba(0,0,0,0.75);color:#e8b84b;font-size:.72rem;padding:.2rem .6rem;border-radius:3px;letter-spacing:.05em;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .2s}
@@ -378,6 +435,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
       <button class="btn" onclick="showAIAnalysis()" style="width:100%;font-size:.7rem;padding:.35rem;margin-top:.3rem;background:linear-gradient(135deg,rgba(60,20,80,.9),rgba(20,40,80,.9));border-color:#6a3a9a">
         🤖 AI 전투 분석
       </button>
+      <!-- 게임 끝내기 버튼 -->
+      <button class="btn" onclick="quitGame()" style="width:100%;font-size:.68rem;padding:.35rem;margin-top:.3rem;background:rgba(60,10,10,.8);border-color:#8a2a2a;color:#e07070">
+        🚪 게임 끝내기
+      </button>
     </div>
 
     <!-- 콘텐츠 -->
@@ -526,7 +587,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 
         <!-- 마을 배경 화면 -->
         <div id="village-map" style="position:relative;width:100%;height:100%;overflow:hidden">
-          <img src="images/village.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" draggable="false">
+          <img src="images/bg/village.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" draggable="false">
 
           <!-- 건물 클릭 영역 (이미지 비율 기준 % 좌표) -->
 
@@ -576,6 +637,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 
             <!-- 대장간 패널 -->
             <div id="panel-forge" style="display:none">
+              <!-- 대장간 배경 이미지 -->
+              <div id="forge-bg" style="width:100%;height:220px;background:url('images/bg/forge_welcome.jpg') center/cover no-repeat;border-radius:6px;margin-bottom:.6rem;border:1px solid var(--border)"></div>
               <div class="panel">
                 <div class="panel-title">🔨 대장간
                   <span style="margin-left:auto;font-size:.65rem;color:var(--gold2)">보유: <span id="village-gold">0</span>냥</span>
@@ -933,12 +996,12 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 // ── 몬스터 이미지 데이터 ──────────────────────────
 // 사냥터 배경 이미지 (이미지 파일 적용 시 여기에 base64 추가)
 const ZONE_BG = {
-  gather_select: 'images/zones/gather_select.jpg',
+  gather_select: 'images/bg/gather_select.jpg',
 
-  field: "images/zones/field.jpg",
+  field: "images/bg/field.jpg",
   // forest: "data:image/jpeg;base64,...",
   // deep: "data:image/jpeg;base64,...",
-  mine: 'images/zones/mine.jpg',};
+  mine: 'images/bg/mine.jpg',};
 
 
 const CHAR_IMAGES = {
@@ -1436,6 +1499,7 @@ const G = {
   gotStarterTools: false,
   tools: {},
   bagSize: 30, // 가방 최대 칸수 (6칸씩 확장)
+  tutorialDone: false, // 튜토리얼 완료 여부
 };
 
 // ── 채집 데이터 ────────────────────────────────────
@@ -1780,6 +1844,213 @@ function gotoHuntFromGather(){
   enterMonsterMap(monType);
 }
 
+// ── 튜토리얼 시스템 ─────────────────────────────────
+const TUTORIAL_STEPS = [
+  // 신단수 대화
+  {speaker:'신단수', text:'...', action:'shindansu_light'},
+  {speaker:'신단수', text:'하늘의 백성 {name}야, 너는 천손임을 이제 각성하였다.'},
+  {speaker:'신단수', text:'이제 천손으로 살아갈 방법을 가르쳐주겠다.'},
+  {speaker:'신단수', text:'먼저 대장간의 불메장이를 찾아가거라. 그가 너의 첫 발걸음을 도와줄 것이다.', action:'close_and_highlight_forge'},
+  // 대장간 (불메장이) - 대장간 클릭 후 자동 진행
+  {speaker:'불메장이', text:'오, 천손이 오셨군요. 기다리고 있었습니다.', trigger:'forge'},
+  {speaker:'불메장이', text:'이 호미, 곡괭이, 도끼를 받으십시오. 채집과 채광, 벌목에 쓰이는 도구입니다.', action:'give_tools'},
+  {speaker:'불메장이', text:'도구는 인벤토리에서 착용하시면 됩니다. 지금 한번 해보십시오.', action:'highlight_inv'},
+  {speaker:'불메장이', text:'인벤토리 탭을 열어 호미를 더블클릭하거나 우클릭하여 착용하세요.', action:'wait_equip_homi'},
+  {speaker:'불메장이', text:'잘 하셨습니다. 나머지 곡괭이와 도끼도 같은 방법으로 착용하십시오.', action:'wait_equip_all'},
+  {speaker:'불메장이', text:'모든 도구를 착용하셨군요. 이제 신단수로 돌아가십시오.', action:'highlight_shindansu'},
+  // 신단수 복귀
+  {speaker:'신단수', text:'잘 하였다. 이제 너의 천명이 시작되었노라.', trigger:'shindansu_return'},
+  {speaker:'신단수', text:'채집터로 나가 호미로 채집을 해보거라. 자연의 이치를 몸으로 익혀야 하느니라.'},
+  {speaker:'신단수', text:'천손의 길은 멀고도 험하나, 하늘이 너를 돕고 있음을 잊지 말아라.', action:'end_tutorial'},
+];
+
+let tutStep = 0;
+let tutTyping = null;
+let tutWaiting = false;
+
+function quitGame(){
+  if(!confirm('게임을 종료하시겠습니까?\n(저장된 데이터는 유지됩니다)')) return;
+  saveGame();
+  // 타이머 정리
+  if(window._regenTimer) clearInterval(window._regenTimer);
+  if(window.battleTimer) clearInterval(window.battleTimer);
+  if(window.autoGatherTimer) clearInterval(window.autoGatherTimer);
+  autoBattle = false;
+  // 게임 화면 숨기고 타이틀로
+  document.getElementById('game').classList.remove('show');
+  toast('게임을 저장하고 종료했습니다.');
+  setTimeout(()=>initGame(), 800);
+}
+
+function startTutorial(){
+  if(G.tutorialDone) return;
+  tutStep = 0;
+  tutWaiting = false;
+  showTab('village');
+  setTimeout(()=>{
+    document.getElementById('tutorial-overlay').classList.add('active');
+    document.getElementById('tutorial-dim').classList.add('show');
+    runTutorialStep();
+  }, 800);
+}
+
+function runTutorialStep(){
+  if(tutStep >= TUTORIAL_STEPS.length) return;
+  const step = TUTORIAL_STEPS[tutStep];
+
+  // trigger 단계는 특정 행동 후에만 실행 (건너뜀)
+  if(step.trigger) { tutStep++; runTutorialStep(); return; }
+
+  // 화자 설정
+  document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
+
+  // 액션 처리
+  if(step.action === 'shindansu_light'){
+    document.getElementById('shindansu-light').classList.add('show');
+  } else if(step.action === 'give_tools'){
+    // 도구 지급 (없는 것만)
+    if(!G.inventory.some(i=>i&&i.name==='호미'))   addToInventory({name:'호미',   icon:'images/tools/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+    if(!G.inventory.some(i=>i&&i.name==='곡괭이')) addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+    if(!G.inventory.some(i=>i&&i.name==='도끼'))   addToInventory({name:'도끼',   icon:'images/tools/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+    renderInv();
+    toast('🎁 호미, 곡괭이, 도끼를 받았습니다!');
+  } else if(step.action === 'highlight_forge'){
+    highlightVillageBuilding('forge');
+  } else if(step.action === 'close_and_highlight_forge'){
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        nextBtn.classList.remove('show');
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        setTimeout(()=>{ 
+          highlightVillageBuilding('forge');
+          document.getElementById('forge-arrow').style.display='block';
+          document.getElementById('forge-arrow-label').style.display='block';
+        }, 400);
+        tutStep++;
+        nextBtn.onclick = tutorialNext;
+      };
+    });
+    return;
+  } else if(step.action === 'highlight_inv'){
+    // 인벤토리 탭 강조
+    highlightTabBtn('inv');
+  } else if(step.action === 'wait_equip_homi'){
+    // 호미 착용 대기
+    tutWaiting = true;
+    waitForEquip('호미', ()=>{ tutWaiting=false; tutStep++; runTutorialStep(); });
+    return;
+  } else if(step.action === 'wait_equip_all'){
+    // 전체 착용 대기
+    tutWaiting = true;
+    waitForEquipAll(()=>{ tutWaiting=false; tutStep++; runTutorialStep(); });
+    return;
+  } else if(step.action === 'highlight_shindansu'){
+    highlightVillageBuilding('shindansu');
+  } else if(step.action === 'end_tutorial'){
+    G.tutorialDone = true;
+    saveGame();
+    setTimeout(endTutorial, 3000);
+  }
+
+  // 타이핑 효과
+  typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+    const nextBtn = document.getElementById('tutorial-next');
+    if(step.action !== 'wait_equip_homi' && step.action !== 'wait_equip_all' && step.action !== 'end_tutorial'){
+      nextBtn.classList.add('show');
+    }
+  });
+}
+
+function typeText(text, onDone){
+  if(tutTyping) clearInterval(tutTyping);
+  const el = document.getElementById('tutorial-text-inner');
+  el.textContent = '';
+  document.getElementById('tutorial-next').classList.remove('show');
+  let i = 0;
+  tutTyping = setInterval(()=>{
+    el.textContent += text[i++];
+    if(i >= text.length){
+      clearInterval(tutTyping);
+      tutTyping = null;
+      if(onDone) onDone();
+    }
+  }, 40);
+}
+
+function tutorialNext(){
+  if(tutTyping){ // 타이핑 중이면 바로 완성
+    clearInterval(tutTyping); tutTyping = null;
+    const step = TUTORIAL_STEPS[tutStep];
+    document.getElementById('tutorial-text-inner').textContent = 
+      (step.text||'').replace('{name}', G.char.name||'천손');
+    document.getElementById('tutorial-next').classList.add('show');
+    return;
+  }
+  document.getElementById('tutorial-next').classList.remove('show');
+  tutStep++;
+  runTutorialStep();
+}
+
+function highlightTabBtn(tabId){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
+  const tabs = ['hunt','gather','char','skill','inv','village','build','quest'];
+  const idx = tabs.indexOf(tabId);
+  if(idx >= 0) document.querySelectorAll('.tab-btn')[idx]?.classList.add('tab-highlight');
+}
+
+function highlightVillageBuilding(building){
+  // 마을 탭이 아니면 이동
+  showTab('village');
+  // 해당 건물 버튼에 강조
+  document.querySelectorAll('.village-btn').forEach(b=>{
+    b.style.animation = b.getAttribute('onclick')?.includes(`'${building}'`) 
+      ? 'tab-pulse 1s infinite' : '';
+  });
+}
+
+function waitForEquip(toolName, callback){
+  const check = setInterval(()=>{
+    const idx = G.inventory.findIndex(i=>i&&i.name===toolName);
+    const equipped = idx>=0 && G.equippedTools && Object.values(G.equippedTools).includes(idx);
+    if(equipped){ clearInterval(check); callback(); }
+  }, 500);
+}
+
+function waitForEquipAll(callback){
+  const check = setInterval(()=>{
+    const homiIdx = G.inventory.findIndex(i=>i&&i.name==='호미');
+    const pickIdx = G.inventory.findIndex(i=>i&&i.name==='곡괭이');
+    const axeIdx  = G.inventory.findIndex(i=>i&&i.name==='도끼');
+    const allEquipped = 
+      homiIdx>=0 && Object.values(G.equippedTools||{}).includes(homiIdx) &&
+      pickIdx>=0 && Object.values(G.equippedTools||{}).includes(pickIdx) &&
+      axeIdx>=0  && Object.values(G.equippedTools||{}).includes(axeIdx);
+    if(allEquipped){ clearInterval(check); callback(); }
+  }, 500);
+}
+
+function endTutorial(){
+  document.getElementById('tutorial-overlay').classList.remove('active');
+  document.getElementById('tutorial-dim').classList.remove('show');
+  document.getElementById('shindansu-light').classList.remove('show');
+  document.getElementById('tutorial-dialog').classList.remove('show');
+  document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
+  toast('✨ 튜토리얼 완료! 천손의 여정이 시작됩니다.');
+}
+
+// 대장간 클릭 시 튜토리얼 step 연결
+function tutorialTrigger(trigger){
+  if(G.tutorialDone) return;
+  const step = TUTORIAL_STEPS[tutStep];
+  if(step && step.trigger === trigger){
+    document.getElementById('tutorial-dialog').classList.add('show');
+    runTutorialStep();
+  }
+}
+
 function startGame(){
   // 채집터 선택 배경 설정
   if(typeof ZONE_BG !== 'undefined' && ZONE_BG.gather_select){
@@ -1811,13 +2082,16 @@ function startGame(){
   }
   // buildings 없으면 초기화
   if(!G.buildings) G.buildings = {};
-  // 기본 도구 지급 — 인벤토리에 없으면 지급
-  const hasHomi = G.inventory.some(i=>i&&i.name==='호미');
-  const hasPick = G.inventory.some(i=>i&&i.name==='곡괭이');
-  const hasAxe  = G.inventory.some(i=>i&&i.name==='도끼');
-  if(!hasHomi) addToInventory({name:'호미',   icon:'images/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-  if(!hasPick) addToInventory({name:'곡괭이', icon:'images/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-  if(!hasAxe)  addToInventory({name:'도끼',   icon:'images/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  // 기본 도구 지급 — 튜토리얼 미완료 시에만 startGame에서 지급하지 않음
+  // (튜토리얼에서 불메장이가 지급함. 단 튜토리얼 완료 후 재접속 시 도구 없으면 지급)
+  if(G.tutorialDone){
+    const hasHomi = G.inventory.some(i=>i&&i.name==='호미');
+    const hasPick = G.inventory.some(i=>i&&i.name==='곡괭이');
+    const hasAxe  = G.inventory.some(i=>i&&i.name==='도끼');
+    if(!hasHomi) addToInventory({name:'호미',   icon:'images/tools/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+    if(!hasPick) addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+    if(!hasAxe)  addToInventory({name:'도끼',   icon:'images/tools/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  }
   // 재료창고에 실수로 들어간 도구 제거
   ['호미','곡괭이','도끼'].forEach(n=>{ if(G.mats[n]) delete G.mats[n]; });
   // 오프라인 생산 계산
@@ -1837,6 +2111,11 @@ function startGame(){
   if(!G.berrySlots) G.berrySlots = [null,null];
   renderZoneList(); renderSkillList(); renderInv(); renderChar(); renderQuests(); renderGatherZoneList(); renderBuildings(); renderToolShop(); renderVillage();
   toast(`${G.char.name}, 천명을 받아들이다!`);
+  // 새 캐릭터면 튜토리얼 시작
+  if(!G.tutorialDone){
+    document.getElementById('tutorial-dialog').classList.add('show');
+    setTimeout(startTutorial, 1200);
+  }
 
   // ── HP/MP 자동 회복 타이머 ──
   // 2분(120초)에 전체 회복 → 1초마다 mhp/120, mmp/120씩 회복
@@ -5861,6 +6140,16 @@ function openBuildingPanel(building){
 
   // 대장간 열릴 때 구매탭 기본 선택
   if(building==='forge') showForge('buy');
+  // 튜토리얼 트리거
+  if(!G.tutorialDone){
+    if(building==='forge'){
+      tutorialTrigger('forge');
+      document.getElementById('forge-arrow').style.display='none';
+      document.getElementById('forge-arrow-label').style.display='none';
+      document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
+    }
+    if(building==='shindansu') tutorialTrigger('shindansu_return');
+  }
   // 약초방 열릴 때 마을 관련 렌더
   if(building==='herb'){
     renderVillageLifeSkill && renderVillageLifeSkill();
@@ -5886,6 +6175,15 @@ function showForge(tab){
     const btn = document.getElementById('forge-btn-'+t);
     if(btn) btn.style.background = t===tab?'rgba(180,130,20,.3)':'';
   });
+  // 배경 이미지 전환
+  const bg = document.getElementById('forge-bg');
+  if(bg){
+    if(tab==='buy'){
+      bg.style.backgroundImage = "url('images/bg/forge_welcome.jpg')";
+    } else {
+      bg.style.backgroundImage = "url('images/bg/forge_work.jpg')";
+    }
+  }
   if(tab==='repair') renderForgeRepair();
   if(tab==='craft')  renderCraftList();
 }
@@ -6975,6 +7273,18 @@ setInterval(()=>{
     <div id="gather-alert-msg" style="font-size:.82rem;color:var(--text3);margin-bottom:1rem;line-height:1.8;white-space:pre-line"></div>
     <button onclick="closeGatherAlert()" style="padding:.45rem 1.4rem;background:rgba(100,50,10,.8);border:1px solid var(--gold);color:var(--gold2);border-radius:5px;cursor:pointer;font-family:var(--font-body);font-size:.82rem">확인</button>
   </div>
+</div>
+<!-- 튜토리얼 오버레이 -->
+<div id="tutorial-overlay">
+  <div id="tutorial-dim"></div>
+  <div id="shindansu-light"></div>
+</div>
+<div id="forge-arrow">➤</div>
+<div id="forge-arrow-label">🔨 대장간을 클릭하세요!</div>
+<div id="tutorial-dialog">
+  <div id="tutorial-speaker">신단수</div>
+  <div id="tutorial-text"><span id="tutorial-text-inner"></span><span id="tutorial-cursor">▌</span></div>
+  <button id="tutorial-next" onclick="tutorialNext()">다음 ▶</button>
 </div>
 </body>
 </html>
