@@ -119,8 +119,7 @@
 #tutorial-cursor{display:inline-block;animation:blink .7s infinite;color:#c9922a;margin-left:4px}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 #tutorial-next{
-  display:block;
-  margin:1rem auto 0;
+  display:inline-block;
   font-size:.9rem;font-weight:700;color:#1a1200;
   background:#e8b84b;border:none;
   padding:.5rem 3rem;cursor:pointer;border-radius:4px;
@@ -2372,16 +2371,15 @@ function playGatherCompleteSound(){
   } catch(e){}
 }
 
+let _tutorialStartTimer = null;
+
 function startTutorial(){
   if(G.tutorialDone) return;
-  // 저장된 단계부터 이어서 진행
   tutStep = G.tutorialStep || 0;
   tutWaiting = false;
   showTab('village');
-  // 건너뛰기 버튼 표시
-  const skipBtn = document.getElementById('tutorial-skip-btn');
-  if(skipBtn) skipBtn.style.display = 'block';
-  setTimeout(()=>{
+  _tutorialStartTimer = setTimeout(()=>{
+    _tutorialStartTimer = null;
     document.getElementById('tutorial-overlay').classList.add('active');
     document.getElementById('tutorial-dialog').classList.add('show');
     runTutorialStep();
@@ -2403,6 +2401,15 @@ function giveToolRecipes(){
 
 function skipTutorial(){
   if(!confirm('튜토리얼을 건너뛰시겠습니까?\n(도구는 자동으로 지급됩니다)')) return;
+  // 시작 타이머 취소
+  if(_tutorialStartTimer){ clearTimeout(_tutorialStartTimer); _tutorialStartTimer = null; }
+  // 모든 대기 타이머 강제 취소
+  if(_waitEquipTimer){ clearInterval(_waitEquipTimer); _waitEquipTimer = null; }
+  if(_waitEquipAllTimer){ clearInterval(_waitEquipAllTimer); _waitEquipAllTimer = null; }
+  if(_waitSsukTimer){ clearInterval(_waitSsukTimer); _waitSsukTimer = null; }
+  // 진행 중인 튜토리얼 완전 정지
+  tutWaiting = false;
+  if(tutTyping){ clearInterval(tutTyping); tutTyping = null; }
   // 도구 지급
   if(!G.inventory.some(i=>i&&i.name==='호미'))   addToInventory({name:'호미',   icon:'images/tools/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
   if(!G.inventory.some(i=>i&&i.name==='곡괭이')) addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
@@ -2411,6 +2418,12 @@ function skipTutorial(){
   G.tutorialStep = 0;
   giveToolRecipes();
   saveGame();
+  // 화살표/강조 모두 제거
+  hideInvArrow && hideInvArrow();
+  hideGatherArrow && hideGatherArrow();
+  hideShindansuArrow && hideShindansuArrow();
+  document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
   endTutorial();
   // 안내 팝업
   showSkipTutorialNotice();
@@ -2500,10 +2513,12 @@ function runTutorialStep(){
           playEquipSound();
           hideInvArrow();
           setTimeout(()=>{
-            document.getElementById('tutorial-dialog').classList.add('show');
-            nextBtn.onclick = tutorialNext; // 착용 완료 후 복원
-            tutStep++;
-            runTutorialStep();
+            if(!G.tutorialDone){
+              document.getElementById('tutorial-dialog').classList.add('show');
+              nextBtn.onclick = tutorialNext;
+              tutStep++;
+              runTutorialStep();
+            }
           }, 500);
         });
       };
@@ -2524,10 +2539,12 @@ function runTutorialStep(){
           playEquipSound();
           hideInvArrow();
           setTimeout(()=>{
-            document.getElementById('tutorial-dialog').classList.add('show');
-            nextBtn.onclick = tutorialNext; // 착용 완료 후 복원
-            tutStep++;
-            runTutorialStep();
+            if(!G.tutorialDone){
+              document.getElementById('tutorial-dialog').classList.add('show');
+              nextBtn.onclick = tutorialNext;
+              tutStep++;
+              runTutorialStep();
+            }
           }, 500);
         });
       };
@@ -2548,20 +2565,20 @@ function runTutorialStep(){
         setTimeout(()=>showGatherArrow(), 300);
         // 쑥 5개 채집 대기
         tutWaiting = true;
-        const checkSsuk = setInterval(()=>{
+        if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
+        _waitSsukTimer = setInterval(()=>{
           const ssukCount = (G.mats['쑥']||0) + (G.inventory.filter(i=>i&&i.name==='쑥').reduce((s,i)=>s+(i.qty||1),0));
           if(ssukCount >= 5){
-            clearInterval(checkSsuk);
+            clearInterval(_waitSsukTimer); _waitSsukTimer = null;
             tutWaiting = false;
             hideGatherArrow();
             playGatherCompleteSound();
             toast('✨ 쑥 5개 채집 완료! 신단수로 돌아가세요.');
-            // 신단수 화살표 표시
             setTimeout(()=>{
               showTab('village');
               showShindansuArrow();
               highlightVillageBuilding('shindansu');
-              tutStep++; // ssuk_done trigger로 이동
+              tutStep++;
             }, 800);
           }
         }, 1000);
@@ -2664,34 +2681,38 @@ function highlightVillageBuilding(building){
   });
 }
 
+let _waitEquipTimer = null;
+let _waitEquipAllTimer = null;
+let _waitSsukTimer = null;
+
 function waitForEquip(toolName, callback){
-  // 현재 장착 상태 스냅샷 (이미 장착돼 있으면 무시)
   const getEquipped = ()=>{
     const idx = G.inventory.findIndex(i=>i&&i.name===toolName);
     return idx>=0 && G.equippedTools && Object.values(G.equippedTools).includes(idx);
   };
-  // 시작 시점에 이미 장착돼 있으면 해제 후 대기
   if(getEquipped()){
     const idx = G.inventory.findIndex(i=>i&&i.name===toolName);
     const skill = G.inventory[idx]?.skill;
     if(skill && G.equippedTools) G.equippedTools[skill] = null;
     renderInv && renderInv();
   }
-  const check = setInterval(()=>{
-    if(getEquipped()){ clearInterval(check); callback(); }
+  if(_waitEquipTimer){ clearInterval(_waitEquipTimer); _waitEquipTimer = null; }
+  _waitEquipTimer = setInterval(()=>{
+    if(getEquipped()){ clearInterval(_waitEquipTimer); _waitEquipTimer = null; callback(); }
   }, 500);
 }
 
 function waitForEquipAll(callback){
-  const check = setInterval(()=>{
+  if(_waitEquipAllTimer){ clearInterval(_waitEquipAllTimer); _waitEquipAllTimer = null; }
+  _waitEquipAllTimer = setInterval(()=>{
     const homiIdx = G.inventory.findIndex(i=>i&&i.name==='호미');
     const pickIdx = G.inventory.findIndex(i=>i&&i.name==='곡괭이');
     const axeIdx  = G.inventory.findIndex(i=>i&&i.name==='도끼');
-    const allEquipped = 
+    const allEquipped =
       homiIdx>=0 && Object.values(G.equippedTools||{}).includes(homiIdx) &&
       pickIdx>=0 && Object.values(G.equippedTools||{}).includes(pickIdx) &&
       axeIdx>=0  && Object.values(G.equippedTools||{}).includes(axeIdx);
-    if(allEquipped){ clearInterval(check); callback(); }
+    if(allEquipped){ clearInterval(_waitEquipAllTimer); _waitEquipAllTimer = null; callback(); }
   }, 500);
 }
 
@@ -2765,7 +2786,10 @@ function endTutorial(){
   document.getElementById('tutorial-dialog').classList.remove('show');
   document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
-  toast('✨ 튜토리얼 완료! 천손의 여정이 시작됩니다.');
+  // 다음 버튼 onclick 초기화
+  const nextBtn = document.getElementById('tutorial-next');
+  if(nextBtn){ nextBtn.onclick = tutorialNext; nextBtn.classList.remove('show'); }
+  if(!G.tutorialDone) toast('✨ 튜토리얼 완료! 천손의 여정이 시작됩니다.');
 }
 
 // 대장간 클릭 시 튜토리얼 step 연결
@@ -8028,8 +8052,10 @@ setInterval(()=>{
 <div id="tutorial-dialog">
   <div id="tutorial-speaker">신단수</div>
   <div id="tutorial-text"><span id="tutorial-text-inner"></span><span id="tutorial-cursor">▌</span></div>
-  <button id="tutorial-next" onclick="tutorialNext()">다음 ▶</button>
-  <button id="tutorial-skip-btn" onclick="skipTutorial()" style="display:none;position:absolute;top:.6rem;right:.8rem;background:none;border:1px solid var(--border2);color:var(--text3);font-size:.62rem;padding:.2rem .5rem;cursor:pointer;border-radius:2px">건너뛰기</button>
+  <div style="display:flex;gap:.6rem;justify-content:center;margin-top:1rem">
+    <button id="tutorial-next" onclick="tutorialNext()">다음 ▶</button>
+    <button id="tutorial-skip-btn" onclick="skipTutorial()" style="background:none;border:1px solid var(--border2);color:var(--text3);font-size:.8rem;padding:.4rem 1rem;cursor:pointer;border-radius:4px">건너뛰기</button>
+  </div>
 </div>
 </body>
 </html>
