@@ -771,14 +771,40 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 
             <!-- 신단수 패널 (준비중) -->
             <div id="panel-shindansu" style="display:none">
-              <div class="panel">
-                <div class="panel-title">🌳 신단수 (神壇樹)</div>
-                <div style="text-align:center;padding:2rem;color:var(--text3)">
-                  <div style="font-size:3rem;margin-bottom:1rem">🌳</div>
-                  <div style="color:var(--gold2);font-size:1rem;margin-bottom:.5rem">신단수</div>
-                  <div style="font-size:.8rem;line-height:1.8">캐릭터의 역사를 기록하고<br>특별 임무를 받는 곳입니다.<br><br>
-                    <span style="color:var(--gold);font-size:.72rem">— 추후 개방 예정 —</span>
+              <!-- 탭 메뉴 -->
+              <div style="display:flex;gap:.3rem;margin-bottom:.6rem">
+                <button class="btn" id="sdTab-summary" onclick="showSdTab('summary')" style="flex:1;font-size:.72rem;padding:.3rem">📊 요약</button>
+                <button class="btn" id="sdTab-craft"   onclick="showSdTab('craft')"   style="flex:1;font-size:.72rem;padding:.3rem">⚒️ 제작</button>
+                <button class="btn" id="sdTab-history" onclick="showSdTab('history')" style="flex:1;font-size:.72rem;padding:.3rem">📜 역사</button>
+              </div>
+
+              <!-- 요약 탭 -->
+              <div id="sd-summary" style="display:none">
+                <div class="panel">
+                  <div class="panel-title">🌳 신단수 — 천손의 기록</div>
+                  <div id="sd-summary-content" style="font-size:.75rem;line-height:2"></div>
+                </div>
+                <div class="panel">
+                  <div class="panel-title">⛏ 생활 스킬</div>
+                  <div id="sd-skill-content" style="font-size:.75rem;line-height:2"></div>
+                </div>
+              </div>
+
+              <!-- 제작 탭 -->
+              <div id="sd-craft" style="display:none">
+                <div class="panel">
+                  <div class="panel-title">⚒️ 제작 가능 목록</div>
+                  <div id="sd-craft-content" style="font-size:.73rem"></div>
+                </div>
+              </div>
+
+              <!-- 역사 탭 -->
+              <div id="sd-history" style="display:none">
+                <div class="panel">
+                  <div class="panel-title">📜 천손의 역사
+                    <button onclick="G.history=[];saveGame();renderShindansu()" style="margin-left:auto;background:none;border:1px solid var(--border2);color:var(--text3);font-size:.6rem;padding:.15rem .4rem;cursor:pointer;border-radius:2px">초기화</button>
                   </div>
+                  <div id="sd-history-content" style="font-size:.72rem;line-height:1.9;max-height:400px;overflow-y:auto"></div>
                 </div>
               </div>
             </div>
@@ -1575,7 +1601,9 @@ const G = {
   gotStarterTools: false,
   tools: {},
   bagSize: 30, // 가방 최대 칸수 (6칸씩 확장)
-  tutorialDone: false, // 튜토리얼 완료 여부
+  tutorialDone: false,
+  tutorialStep: 0,     // 튜토리얼 진행 단계 저장
+  history: [],
 };
 
 // ── 채집 데이터 ────────────────────────────────────
@@ -1600,16 +1628,15 @@ const GATHER_ZONES = [
 
 const GATHER_POINTS = {
   meadow: [
-    {id:'gp_풀잎',    name:'풀잎',    icon:'🌿', skill:'gather', time:2, regenTime:12, pos:{x:12,y:54}, skillLvMin:1, skillLvMax:3},
-    {id:'gp_풀잎2',   name:'풀잎',    icon:'🌿', skill:'gather', time:2, regenTime:12, pos:{x:25,y:62}, skillLvMin:1, skillLvMax:3},
-    {id:'gp_쑥',      name:'쑥',      icon:'🌱', skill:'gather', time:2, regenTime:15, pos:{x:42,y:56}, skillLvMin:1, skillLvMax:4},
-    {id:'gp_쑥2',     name:'쑥',      icon:'🌱', skill:'gather', time:2, regenTime:15, pos:{x:55,y:68}, skillLvMin:1, skillLvMax:4},
-    {id:'gp_야생화',  name:'야생화',  icon:'🌸', skill:'gather', time:2, regenTime:18, pos:{x:70,y:58}, skillLvMin:2},
-    {id:'gp_민들레',  name:'민들레',  icon:'🌼', skill:'gather', time:2, regenTime:16, pos:{x:85,y:52}, skillLvMin:2},
-    {id:'gp_돌조각',  name:'돌조각',  icon:'🪨', skill:'gather', time:2, regenTime:10, pos:{x:30,y:45}, skillLvMin:1},
-    {id:'gp_돌조각2', name:'돌조각',  icon:'🪨', skill:'gather', time:2, regenTime:10, pos:{x:60,y:45}, skillLvMin:1},
-    {id:'gp_붉은열매',name:'붉은열매',icon:'🍎', skill:'gather', time:2, regenTime:20, pos:{x:35,y:42}, fixedQty:1, skillLvMin:1, skillLvMax:3, berryGroup:'meadow_berry'},
-    {id:'gp_청열매',  name:'청열매',  icon:'🫐', skill:'gather', time:2, regenTime:20, pos:{x:62,y:42}, fixedQty:1, skillLvMin:1, skillLvMax:3, berryGroup:'meadow_berry'},
+    // 이미지 기준: 쑥(좌측), 감초(쑥 옆) - 아이템 사라지지 않음(noRegen:true)
+    {id:'gp_쑥',      name:'쑥',      icon:'🌱', skill:'gather', time:5, pos:{x:14,y:52}, skillLvMin:1, noRegen:true},
+    {id:'gp_감초',    name:'감초',    icon:'🌿', skill:'gather', time:5, pos:{x:22,y:54}, skillLvMin:1, noRegen:true},
+    {id:'gp_풀잎',    name:'풀잎',    icon:'🍃', skill:'gather', time:5, pos:{x:40,y:62}, skillLvMin:1, noRegen:true},
+    {id:'gp_야생화',  name:'야생화',  icon:'🌸', skill:'gather', time:5, pos:{x:60,y:58}, skillLvMin:3, noRegen:true},
+    {id:'gp_민들레',  name:'민들레',  icon:'🌼', skill:'gather', time:5, pos:{x:78,y:60}, skillLvMin:3, noRegen:true},
+    {id:'gp_돌조각',  name:'돌조각',  icon:'🪨', skill:'gather', time:5, pos:{x:50,y:55}, skillLvMin:1, noRegen:true},
+    {id:'gp_붉은열매',name:'붉은열매',icon:'🍎', skill:'gather', time:5, pos:{x:35,y:45}, fixedQty:1, skillLvMin:1, berryGroup:'meadow_berry', noRegen:true},
+    {id:'gp_청열매',  name:'청열매',  icon:'🫐', skill:'gather', time:5, pos:{x:65,y:45}, fixedQty:1, skillLvMin:1, berryGroup:'meadow_berry', noRegen:true},
   ],
   forest: [
     {id:'gf_버섯',    name:'버섯',    icon:'🍄', skill:'gather', time:2, regenTime:18, pos:{x:15,y:54}, skillLvMin:2},
@@ -1684,16 +1711,24 @@ const BERRY_EFFECTS = {
   '신령열매':   {type:'mp', pct:0.20, desc:'MP 20% 회복'},
 };
 
-function getGatherQty(profPct, lv, ptLvMin){
-  // 채집물 레벨 대비 내 레벨 차이로 기본 수량 결정
-  // 차이 0: 1개~5개, 차이 1: 2개~6개, 차이 2: 3개~7개, 차이 3+: 4개~8개
-  const minLv = ptLvMin || 1;
-  const diff = Math.max(0, lv - minLv);
-  const base = Math.min(4, diff) + 1; // 1~5
-  const maxQ = base + 4;
-  // 숙련도 0~99% → 보너스 0~4개
-  const bonus = profPct<20?0 : profPct<40?1 : profPct<60?2 : profPct<80?3 : 4;
-  return Math.min(maxQ, base + bonus);
+function getGatherQty(proficiency, lv, ptLvMin){
+  // 새 시스템: 숙련도 50 이상이면 2개, 아니면 1개
+  // proficiency = 현재 레벨 내 채집 횟수 (0~99)
+  return proficiency >= 50 ? 2 : 1;
+}
+
+// 채집 스킬 레벨업 체크 (100회 = 레벨업)
+function checkGatherLevelUp(skill){
+  const sk = G.gatherSkills[skill];
+  if(!sk) return;
+  if(sk.xp >= 100){
+    sk.xp -= 100;
+    sk.lv = (sk.lv||1) + 1;
+    toast(`🎉 ${skill==='gather'?'채집':skill==='logging'?'벌목':'채광'} 스킬 Lv${sk.lv}!`);
+    addHistory('레벨업', `${skill==='gather'?'채집':skill==='logging'?'벌목':'채광'} 스킬이 Lv${sk.lv}이 되었다.`);
+    // HUD 업데이트
+    updateGatherHUD && updateGatherHUD();
+  }
 }
 
 // (구 GATHER_DATA 호환용 더미)
@@ -1764,6 +1799,9 @@ function createChar(){
   G.char.name=name; G.char.gender=selGender; G.char.body=selBody;
   if(selBody==='날렵') G.char.ev=5;
   else if(selBody==='다부진') G.char.def+=1;
+  G.char.createdAt = Date.now();
+  G.history = [];
+  addHistory('탄생', `${name}(이)가 천손으로 각성하였다.`);
   document.getElementById('char-create').style.display='none';
   saveGame(); startGame();
 }
@@ -1924,7 +1962,7 @@ function gotoHuntFromGather(){
 const TUTORIAL_STEPS = [
   // 신단수 대화
   {speaker:'신단수', text:'...', action:'shindansu_light'},
-  {speaker:'신단수', text:'하늘의 백성 {name}아... 마침내 네가 각성하였구나.'},
+  {speaker:'신단수', text:'하늘의 백성 {name}.... 마침내 네가 천손임을 각성하였구나.'},
   {speaker:'신단수', text:'이 땅에 천손의 혈맥이 깨어난 것은 오랜 세월 만의 일이로다.'},
   {speaker:'신단수', text:'이제 천손으로 살아가는 법을 가르쳐주겠노라.'},
   {speaker:'신단수', text:'먼저 저 대장간의 <span style="color:#e8b84b;font-weight:700">불메장이</span>를 찾아가거라.\n그가 네 첫걸음을 도와줄 것이니라.', action:'close_and_highlight_forge'},
@@ -1933,13 +1971,14 @@ const TUTORIAL_STEPS = [
   {speaker:'불메장이', text:'이제 {name}님이 오셨군요. 어서 오십시오.'},
   {speaker:'불메장이', text:'천손으로 살아가시는 데 도움이 될\n\'호미\', \'도끼\', \'곡괭이\'를 드리겠습니다.', action:'give_tools'},
   {speaker:'불메장이', text:'채집, 벌목, 채광에 쓰이는 도구입니다.\n잘 간수하시길 바랍니다.'},
-  {speaker:'불메장이', text:'상단의 인벤토리 탭을 눌러보십시오.\n호미를 더블클릭하거나 우클릭하여 착용하시면 됩니다.', action:'highlight_inv_and_wait'},
+  {speaker:'불메장이', text:'하단의 인벤토리 탭을 눌러보십시오.\n호미를 더블클릭하거나 우클릭하여 착용하시면 됩니다.', action:'highlight_inv_and_wait'},
   {speaker:'불메장이', text:'허허, 잘 하셨습니다.\n나머지 곡괭이와 도끼도 같은 방법으로 착용하십시오.', action:'wait_equip_all'},
   {speaker:'불메장이', text:'모든 도구를 갖추셨군요. 이제 준비가 되셨습니다.\n신단수께 돌아가 다음 가르침을 받으십시오.', action:'close_and_highlight_shindansu'},
   // 신단수 복귀
   {speaker:'신단수', text:'불메장이에게 호미, 도끼, 곡괭이 착용법은 잘 배웠구나.', trigger:'shindansu_return'},
   {speaker:'신단수', text:'호미는 채집, 도끼는 벌목, 곡괭이는 채광을 할 수 있다.\n이제 직접 사용해보도록 하자.'},
-  {speaker:'신단수', text:'먼저 채집을 해보거라.\n쑥 5개를 채집해서 가져오거라.', action:'quest_gather_ssuk'},
+  {speaker:'신단수', text:'먼저 채집을 해보거라.\n쑥 5개를 채집해서 가져오거라.'},
+  {speaker:'신단수', text:'쑥은 들판 채집터에서 캘 수 있느니라.\n하단의 채집터 탭을 눌러 들판으로 나아가거라.', action:'quest_gather_ssuk'},
   // 쑥 채집 완료 후 신단수 복귀
   {speaker:'신단수', text:'잘 하였노라.\n자연의 이치를 몸으로 느꼈느냐?', trigger:'ssuk_done'},
   {speaker:'신단수', text:'천손의 길은 멀고도 험하나...\n하늘이 언제나 너와 함께하고 있음을 잊지 말아라.', action:'end_tutorial'},
@@ -1963,16 +2002,443 @@ function quitGame(){
   setTimeout(()=>initGame(), 800);
 }
 
+// 무기 장착 - 묵직한 금속음
+// ── 한얼 시간 시스템 ─────────────────────────────────
+function getGameDate(timestamp){
+  const start = G.char.createdAt || timestamp;
+  const realMs = timestamp - start;
+  const totalGameDays = realMs / 3600000; // 1시간 = 1게임일
+  const totalDaysInt = Math.floor(totalGameDays);
+  const gameHour = Math.floor((totalGameDays - totalDaysInt) * 24);
+  const gameYear  = Math.floor(totalDaysInt / 360) + 1;
+  const remaining = totalDaysInt % 360;
+  const gameMonth = Math.floor(remaining / 30) + 1;
+  const gameDay   = (remaining % 30) + 1;
+  return `한얼 ${gameYear}년 ${gameMonth}월 ${gameDay}일 ${gameHour}시`;
+}
+
+// 역사 기록 추가
+function addHistory(type, detail){
+  if(!G.history) G.history = [];
+  G.history.push({ type, detail, ts: Date.now() });
+  // 최대 500개 유지
+  if(G.history.length > 500) G.history.shift();
+  saveGame();
+}
+
+// ── 신단수 패널 렌더링 ────────────────────────────────
+function showSdTab(tab){
+  ['summary','craft','history'].forEach(t=>{
+    document.getElementById('sd-'+t).style.display = t===tab?'block':'none';
+    const btn = document.getElementById('sdTab-'+t);
+    if(btn) btn.style.background = t===tab?'rgba(180,130,20,.3)':'';
+  });
+  if(tab==='summary') renderSdSummary();
+  if(tab==='craft')   renderSdCraft();
+  if(tab==='history') renderSdHistory();
+}
+
+function renderShindansu(){
+  showSdTab('summary');
+}
+
+function renderSdSummary(){
+  const c = G.char;
+  const el = document.getElementById('sd-summary-content');
+  if(!el) return;
+  const totalKills = Object.values(G.killCount||{}).reduce((s,v)=>s+v,0);
+  const bossKills  = Object.values(G.bossKill||{}).reduce((s,v)=>s+v,0);
+  el.innerHTML = `
+    <div>📛 이름: <span style="color:var(--gold2)">${c.name}</span> (${c.gender==='남'?'남자':'여자'} · ${c.body||'균형'}형)</div>
+    <div>⭐ 레벨: <span style="color:var(--gold2)">Lv${c.lv}</span> · 경험치: ${c.exp}/${c.lv*100}</div>
+    <div>❤️ 체력: ${c.mhp} · 💙 내공: ${c.mmp}</div>
+    <div>⚔️ 공격력: ${c.atk} · 🛡 방어력: ${c.def}</div>
+    <div>🐛 총 처치: <span style="color:var(--gold2)">${totalKills.toLocaleString()}</span>마리</div>
+    <div>👹 보스 처치: <span style="color:var(--gold2)">${bossKills.toLocaleString()}</span>회</div>
+    <div>🎒 보유 냥: <span style="color:var(--gold2)">${(G.gold||0).toLocaleString()}</span>냥</div>
+    <div style="font-size:.65rem;color:var(--text3);margin-top:.3rem">📅 각성일: ${c.createdAt ? getGameDate(c.createdAt) : '-'}</div>
+  `;
+  const sk = document.getElementById('sd-skill-content');
+  if(!sk) return;
+  const ls = G.lifeSkill||{};
+  const skillNames = {gather:'채집',logging:'벌목',mining:'채광'};
+  let html = '';
+  ['gather','logging','mining'].forEach(s=>{
+    const sk = G.gatherSkills[s] || {lv:1,xp:0};
+    const lv = sk.lv || 1;
+    const xp = sk.xp || 0;
+    const bar = Math.min(100, xp);
+    const qty = xp >= 50 ? 2 : 1;
+    html += `
+      <div style="margin-bottom:.4rem">
+        <span style="color:var(--gold2)">${skillNames[s]}</span> Lv${lv}
+        <span style="color:var(--text3);font-size:.65rem;margin-left:.3rem">(숙련도 ${xp}/100 · 채집 ${qty}개)</span>
+        <div style="background:var(--bg2);border-radius:2px;height:4px;margin-top:2px">
+          <div style="background:#4aaf5a;width:${bar}%;height:100%;border-radius:2px"></div>
+        </div>
+      </div>`;
+  });
+  sk.innerHTML = html || '<div style="color:var(--text3)">스킬 없음</div>';
+}
+
+function renderSdCraft(){
+  const el = document.getElementById('sd-craft-content');
+  if(!el) return;
+  const learned = G.craftSkills||[];
+  const all = (typeof ALL_CRAFT_RECIPES !== 'undefined') ? ALL_CRAFT_RECIPES : [];
+  if(!all.length){ el.innerHTML='<div style="color:var(--text3)">제작 레시피 없음</div>'; return; }
+
+  let html = '';
+  all.forEach(r=>{
+    const canLearn = learned.includes(r.id);
+    const mats = (r.mats||[]).map(m=>`${m.name}×${m.qty}`).join(', ');
+    html += `
+      <div style="padding:.4rem 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem">
+        <span style="font-size:.65rem;padding:.1rem .35rem;border-radius:2px;background:${canLearn?'rgba(74,175,90,.25)':'rgba(80,80,80,.3)'};color:${canLearn?'#6abf4a':'var(--text3)'}">${canLearn?'습득':'미습득'}</span>
+        <div>
+          <div style="color:var(--gold2);font-size:.75rem">${r.result}</div>
+          <div style="color:var(--text3);font-size:.65rem">재료: ${mats||'없음'}</div>
+        </div>
+      </div>`;
+  });
+  el.innerHTML = html || '<div style="color:var(--text3)">제작 레시피 없음</div>';
+}
+
+function renderSdHistory(){
+  const el = document.getElementById('sd-history-content');
+  if(!el) return;
+  if(!G.history||!G.history.length){
+    el.innerHTML='<div style="color:var(--text3);text-align:center;padding:1rem">기록이 없습니다.</div>';
+    return;
+  }
+  const typeIcon = {탄생:'🌟',레벨업:'⭐',채집:'🌿',벌목:'🪓',채광:'⛏️',제작:'⚒️',보스:'👹',퀘스트:'📋',기타:'📝'};
+  const html = [...G.history].reverse().map(h=>`
+    <div style="padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.05);display:flex;gap:.5rem;align-items:flex-start">
+      <span style="flex-shrink:0">${typeIcon[h.type]||'📝'}</span>
+      <div>
+        <div style="color:var(--text2);font-size:.73rem">${h.detail}</div>
+        <div style="color:var(--text3);font-size:.62rem">${getGameDate(h.ts)}</div>
+      </div>
+    </div>`).join('');
+  el.innerHTML = html;
+}
+
+// 신단수 패널 열릴 때 호출
+function openShindansuPanel(){
+  renderShindansu();
+}
+
+function playEquipItemSound(slot){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    if(slot === 'weapon'){
+      // 칼 뽑는 느낌 - 고음에서 저음으로
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(800, t);
+      osc.frequency.exponentialRampToValueAtTime(200, t+0.2);
+      gain.gain.setValueAtTime(0.3, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(t); osc.stop(t+0.3);
+      // 금속 울림
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.value = 440;
+      gain2.gain.setValueAtTime(0.15, t+0.15);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t+0.8);
+      osc2.connect(gain2); gain2.connect(ctx.destination);
+      osc2.start(t+0.15); osc2.stop(t+0.8);
+    } else if(slot === 'armor'){
+      // 갑옷 입는 느낌 - 둔탁한 소리 2번
+      [0, 0.12].forEach(delay=>{
+        const buf = ctx.createBuffer(1, ctx.sampleRate*0.15, ctx.sampleRate);
+        const data = buf.getChannelData(0);
+        for(let j=0; j<data.length; j++)
+          data[j] = (Math.random()*2-1) * Math.exp(-j/(ctx.sampleRate*0.05));
+        const src = ctx.createBufferSource();
+        const gain = ctx.createGain();
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass'; filter.frequency.value = 400;
+        gain.gain.value = 0.5;
+        src.buffer = buf;
+        src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+        src.start(t+delay);
+      });
+    } else {
+      // 악세사리 - 가벼운 딸랑 소리
+      [523, 784].forEach((freq, i)=>{
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'sine'; osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.2, t+i*0.08);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+i*0.08+0.5);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t+i*0.08); osc.stop(t+i*0.08+0.5);
+      });
+    }
+  } catch(e){}
+}
+
+// 도구 장착 - 툭 하는 소리
+function playEquipToolSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    const buf = ctx.createBuffer(1, ctx.sampleRate*0.2, ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let j=0; j<data.length; j++)
+      data[j] = (Math.random()*2-1) * Math.exp(-j/(ctx.sampleRate*0.06));
+    const src = ctx.createBufferSource();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass'; filter.frequency.value = 600; filter.Q.value = 3;
+    gain.gain.value = 0.4;
+    src.buffer = buf;
+    src.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
+    src.start(t);
+    // 짧은 금속 울림
+    const osc = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc.type = 'sine'; osc.frequency.value = 350;
+    gain2.gain.setValueAtTime(0.1, t+0.05);
+    gain2.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+    osc.connect(gain2); gain2.connect(ctx.destination);
+    osc.start(t+0.05); osc.stop(t+0.4);
+  } catch(e){}
+}
+
+// 해제 - 가벼운 소리
+function playUnequipSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(400, t);
+    osc.frequency.linearRampToValueAtTime(250, t+0.15);
+    gain.gain.setValueAtTime(0.15, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t+0.2);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(t); osc.stop(t+0.2);
+  } catch(e){}
+}
+let _audioCtx = null;
+function getAudioCtx(){
+  if(!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return _audioCtx;
+}
+
+// 신단수 등장 - 신비로운 종소리 + 저음 드론
+function playShindansuSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+
+    // 저음 드론 (신비로운 분위기)
+    const drone = ctx.createOscillator();
+    const droneGain = ctx.createGain();
+    drone.type = 'sine';
+    drone.frequency.setValueAtTime(80, t);
+    drone.frequency.linearRampToValueAtTime(85, t+3);
+    droneGain.gain.setValueAtTime(0, t);
+    droneGain.gain.linearRampToValueAtTime(0.15, t+0.5);
+    droneGain.gain.linearRampToValueAtTime(0.1, t+2.5);
+    droneGain.gain.linearRampToValueAtTime(0, t+4);
+    drone.connect(droneGain);
+    droneGain.connect(ctx.destination);
+    drone.start(t); drone.stop(t+4);
+
+    // 종소리 3번 (서로 다른 음높이)
+    [523, 659, 784].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t + i*0.6);
+      gain.gain.linearRampToValueAtTime(0.3, t + i*0.6 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.6 + 1.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t + i*0.6);
+      osc.stop(t + i*0.6 + 1.5);
+
+      // 배음 추가
+      const osc2 = ctx.createOscillator();
+      const gain2 = ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2;
+      gain2.gain.setValueAtTime(0, t + i*0.6);
+      gain2.gain.linearRampToValueAtTime(0.1, t + i*0.6 + 0.01);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + i*0.6 + 1.0);
+      osc2.connect(gain2);
+      gain2.connect(ctx.destination);
+      osc2.start(t + i*0.6);
+      osc2.stop(t + i*0.6 + 1.0);
+    });
+  } catch(e){}
+}
+
+// 도구 지급 - 금속 소리
+function playGiveToolsSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    [0, 0.15, 0.3].forEach((delay, i) => {
+      const buf = ctx.createBuffer(1, ctx.sampleRate*0.3, ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for(let j=0; j<data.length; j++){
+        data[j] = (Math.random()*2-1) * Math.exp(-j/(ctx.sampleRate*0.08));
+      }
+      const src = ctx.createBufferSource();
+      const gain = ctx.createGain();
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 800 + i*200;
+      filter.Q.value = 5;
+      src.buffer = buf;
+      gain.gain.setValueAtTime(0.4, t+delay);
+      gain.gain.exponentialRampToValueAtTime(0.001, t+delay+0.3);
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      src.start(t+delay);
+    });
+  } catch(e){}
+}
+
+// 착용 완료 - 가벼운 딩동
+function playEquipSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    [523, 659].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.25, t + i*0.12);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.12 + 0.4);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t + i*0.12);
+      osc.stop(t + i*0.12 + 0.4);
+    });
+  } catch(e){}
+}
+
+// 튜토리얼 완료 - 밝은 팡파레
+function playTutorialCompleteSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    const notes = [523, 659, 784, 1047];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.3, t + i*0.15);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.15 + 0.5);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t + i*0.15);
+      osc.stop(t + i*0.15 + 0.5);
+    });
+  } catch(e){}
+}
+
+// 채집 완료 - 자연스러운 소리
+function playGatherCompleteSound(){
+  try {
+    const ctx = getAudioCtx();
+    const t = ctx.currentTime;
+    [392, 523, 659].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.2, t + i*0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + i*0.1 + 0.6);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(t + i*0.1);
+      osc.stop(t + i*0.1 + 0.6);
+    });
+  } catch(e){}
+}
+
 function startTutorial(){
   if(G.tutorialDone) return;
-  tutStep = 0;
+  // 저장된 단계부터 이어서 진행
+  tutStep = G.tutorialStep || 0;
   tutWaiting = false;
   showTab('village');
+  // 건너뛰기 버튼 표시
+  const skipBtn = document.getElementById('tutorial-skip-btn');
+  if(skipBtn) skipBtn.style.display = 'block';
   setTimeout(()=>{
     document.getElementById('tutorial-overlay').classList.add('active');
-    document.getElementById('tutorial-dim').classList.add('show');
+    document.getElementById('tutorial-dialog').classList.add('show');
     runTutorialStep();
   }, 800);
+}
+
+// 튜토리얼 완료 시 도구 제작법 지급
+function giveToolRecipes(){
+  if(!G.craftSkills) G.craftSkills = [];
+  const toolRecipes = ['tool_homi','tool_pickaxe','tool_axe'];
+  toolRecipes.forEach(id=>{
+    if(!G.craftSkills.includes(id)){
+      G.craftSkills.push(id);
+    }
+  });
+  toast('📖 돌호미, 돌곡괭이, 돌도끼 제작법을 습득했습니다!');
+  saveGame();
+}
+
+function skipTutorial(){
+  if(!confirm('튜토리얼을 건너뛰시겠습니까?\n(도구는 자동으로 지급됩니다)')) return;
+  // 도구 지급
+  if(!G.inventory.some(i=>i&&i.name==='호미'))   addToInventory({name:'호미',   icon:'images/tools/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  if(!G.inventory.some(i=>i&&i.name==='곡괭이')) addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  if(!G.inventory.some(i=>i&&i.name==='도끼'))   addToInventory({name:'도끼',   icon:'images/tools/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+  G.tutorialDone = true;
+  G.tutorialStep = 0;
+  giveToolRecipes();
+  saveGame();
+  endTutorial();
+  // 안내 팝업
+  showSkipTutorialNotice();
+}
+
+function showSkipTutorialNotice(){
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:flex;align-items:center;justify-content:center';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#110d08;border:2px solid #c9922a;border-radius:8px;padding:1.5rem 2rem;max-width:360px;width:90%;text-align:center';
+  box.innerHTML = `
+    <div style="font-size:2rem;margin-bottom:.8rem">⚠️</div>
+    <div style="font-size:.95rem;font-weight:700;color:#e8b84b;margin-bottom:1rem">도구 사용 안내</div>
+    <div style="font-size:.82rem;color:#f0e6c8;line-height:1.9;margin-bottom:1.2rem">
+      지급된 <span style="color:#e8b84b">호미·곡괭이·도끼</span>는<br>
+      파손되면 다시 구매할 수 없습니다.<br><br>
+      파손 시 <span style="color:#6abf4a">대장간 → 제작 탭</span>에서<br>
+      <span style="color:#e8b84b">돌호미·돌곡괭이·돌도끼</span>를<br>
+      직접 제작하여 사용하십시오.<br><br>
+      <span style="font-size:.72rem;color:#aaa">(재료: 돌조각 5개 + 소나무 2개)</span>
+    </div>
+    <button onclick="this.closest('div[style*=fixed]').remove()"
+      style="background:#c9922a;border:none;color:#1a1200;font-size:.9rem;font-weight:700;padding:.6rem 2.5rem;border-radius:4px;cursor:pointer;letter-spacing:.05em">
+      확인
+    </button>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
 }
 
 function runTutorialStep(){
@@ -1988,12 +2454,14 @@ function runTutorialStep(){
   // 액션 처리
   if(step.action === 'shindansu_light'){
     document.getElementById('shindansu-light').classList.add('show');
+    playShindansuSound();
   } else if(step.action === 'give_tools'){
     // 도구 지급 (없는 것만)
     if(!G.inventory.some(i=>i&&i.name==='호미'))   addToInventory({name:'호미',   icon:'images/tools/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
     if(!G.inventory.some(i=>i&&i.name==='곡괭이')) addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
     if(!G.inventory.some(i=>i&&i.name==='도끼'))   addToInventory({name:'도끼',   icon:'images/tools/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
     renderInv();
+    playGiveToolsSound();
     toast('🎁 호미, 곡괭이, 도끼를 받았습니다!');
   } else if(step.action === 'highlight_forge'){
     highlightVillageBuilding('forge');
@@ -2029,6 +2497,7 @@ function runTutorialStep(){
         tutWaiting = true;
         waitForEquip('호미', ()=>{
           tutWaiting = false;
+          playEquipSound();
           hideInvArrow();
           setTimeout(()=>{
             document.getElementById('tutorial-dialog').classList.add('show');
@@ -2052,6 +2521,7 @@ function runTutorialStep(){
         tutWaiting = true;
         waitForEquipAll(()=>{
           tutWaiting = false;
+          playEquipSound();
           hideInvArrow();
           setTimeout(()=>{
             document.getElementById('tutorial-dialog').classList.add('show');
@@ -2084,6 +2554,7 @@ function runTutorialStep(){
             clearInterval(checkSsuk);
             tutWaiting = false;
             hideGatherArrow();
+            playGatherCompleteSound();
             toast('✨ 쑥 5개 채집 완료! 신단수로 돌아가세요.');
             // 신단수 화살표 표시
             setTimeout(()=>{
@@ -2118,7 +2589,10 @@ function runTutorialStep(){
     return;
   } else if(step.action === 'end_tutorial'){
     G.tutorialDone = true;
+    G.tutorialStep = 0;
+    giveToolRecipes();
     saveGame();
+    playTutorialCompleteSound();
     setTimeout(endTutorial, 3000);
   }
 
@@ -2168,6 +2642,8 @@ function tutorialNext(){
   }
   document.getElementById('tutorial-next').classList.remove('show');
   tutStep++;
+  G.tutorialStep = tutStep;
+  saveGame();
   runTutorialStep();
 }
 
@@ -3964,6 +4440,7 @@ function checkLevelUp(){
     c.hp=c.mhp; c.mp=c.mmp;
     addLog(`🎉 레벨업! Lv${c.lv} — 체력·내공 회복!`);
     showLevelUpPopup(`🎉 레벨업! Lv${c.lv}`, `체력·내공 완전 회복!\n스탯 포인트 +${bonus}`);
+    addHistory('레벨업', `${c.name}(이)가 Lv${c.lv}이 되었다.`);
   }
 }
 
@@ -4521,14 +4998,13 @@ function dblClickEquip(invIdx){
   if(!recipe||!recipe.equip){ toast('장착할 수 없는 아이템입니다!'); return; }
   const slot=recipe.equip.slot;
   const cur=G.equipped[slot];
-  if(cur===item.name){ G.equipped[slot]=null; toast(`${item.name} 해제`); }
+  if(cur===item.name){ G.equipped[slot]=null; toast(`${item.name} 해제`); playUnequipSound(); }
   else if(cur){
-    // 비교 팝업
     const curRecipe=ALL_CRAFT_RECIPES.find(r=>r.result===cur);
     showEquipComparePopup(item, recipe, curRecipe, slot);
     return;
   } else {
-    G.equipped[slot]=item.name; toast(`⚔ ${item.name} 장착!`);
+    G.equipped[slot]=item.name; toast(`⚔ ${item.name} 장착!`); playEquipItemSound(slot);
   }
   updateSide(); renderInv(); saveGame();
 }
@@ -4539,14 +5015,13 @@ function dblClickEquipTool(invIdx){
   const skill=item.skill;
   const curIdx=G.equippedTools[skill];
   const slotName={gather:'호미',logging:'도끼',mining:'곡괭이'}[skill];
-  if(curIdx===invIdx){ G.equippedTools[skill]=null; toast(`${item.name} 해제`); }
+  if(curIdx===invIdx){ G.equippedTools[skill]=null; toast(`${item.name} 해제`); playUnequipSound(); }
   else if(curIdx!=null && G.inventory[curIdx]){
-    // 현재 장착 도구와 비교
     const cur=G.inventory[curIdx];
     showToolComparePopup(item, invIdx, cur, curIdx, skill);
     return;
   } else {
-    G.equippedTools[skill]=invIdx; toast(`⛏ ${item.name} 장착!`);
+    G.equippedTools[skill]=invIdx; toast(`⛏ ${item.name} 장착!`); playEquipToolSound();
   }
   renderInv(); saveGame();
 }
@@ -5001,7 +5476,7 @@ function renderGatherZoneList(){
           } else {
             showGatherAlert(`❌ 도구가 없습니다!`,
               `${missingTools.map(t=>t.tool).join(', ')}가 없어서 입장할 수 없습니다.\n\n` +
-              `마을 → 대장간 → [구매] 탭에서 구매하세요.`);
+              `마을 → 대장간 → [제작] 탭에서 제작하세요.`);
           }
           return;
         }
@@ -5163,7 +5638,7 @@ function renderGatherItemList(zone){
                 showGatherAlert(`🪛 ${needTool}가 없습니다!`,
                   `【도구 착용 방법】\n\n` +
                   `① 마을 → 대장간 → [구매] 탭\n` +
-                  `   ${needTool} 구매 (가방에 추가)\n\n` +
+                  `   ${needTool} 제작 (가방에 추가)\n\n` +
                   `② 인벤토리 탭으로 이동\n` +
                   `   가방에서 ${needTool} 더블클릭\n\n` +
                   `③ 채집터로 돌아와 채집 시작\n\n` +
@@ -5473,7 +5948,7 @@ function startGatherPointExec(zoneId, pointId){
       showGatherAlert(`🪛 ${needTool}가 없습니다!`,
         `【도구 착용 방법】\n\n` +
         `① 마을 → 대장간 → [구매] 탭\n` +
-        `   ${needTool} 구매 (가방에 추가)\n\n` +
+        `   ${needTool} 제작 (가방에 추가)\n\n` +
         `② 인벤토리 탭으로 이동\n` +
         `   가방에서 ${needTool} 더블클릭\n` +
         `   또는 우클릭 → [장착] 선택\n` +
@@ -5495,8 +5970,8 @@ function startGatherPointExec(zoneId, pointId){
         `내구도가 0이 되었습니다.\n\n` +
         `【해결 방법】\n` +
         `A) 마을 → 대장간 → [수리] 탭에서 수리\n` +
-        `B) 마을 → 대장간 → [구매] 탭에서 새 구매\n\n` +
-        `구매 후 인벤토리에서 더블클릭으로 장착!`);
+        `B) 마을 → 대장간 → [제작] 탭에서 새 제작\n\n` +
+        `제작 후 인벤토리에서 더블클릭으로 장착!`);
     }
     return;
   }
@@ -5625,14 +6100,17 @@ function finishGatherPointExec(zoneId, pointId){
       toast(`🔒 ${pt.name}: ${skillName} Lv${needMin}~${needMax} 필요 (현재 Lv${curLv})`);
       return;
     }
-    // 일반 채집물 획득
-    const inLevelXp = sk.xp % 100;
-    const qty = getGatherQty(inLevelXp > 0 ? inLevelXp : 1, sk.lv, pt.skillLvMin);
+    // 일반 채집물 획득 - 새 시스템: 숙련도(xp) 기반
+    const curXp = (G.gatherSkills[pt.skill]||{xp:0}).xp || 0;
+    const qty = pt.fixedQty ? 1 : getGatherQty(curXp, sk.lv, pt.skillLvMin);
     G.mats[pt.name] = (G.mats[pt.name]||0) + qty;
     // 채집 통계 수집
     if(!G.gatherStats) G.gatherStats={itemCount:{},totalGather:0,toolUse:{}};
     G.gatherStats.itemCount[pt.name] = (G.gatherStats.itemCount[pt.name]||0) + qty;
     G.gatherStats.totalGather = (G.gatherStats.totalGather||0) + 1;
+    // 역사 기록
+    const skillTypeKor = {gather:'채집',mining:'채광',logging:'벌목'}[pt.skill]||'채집';
+    addHistory(skillTypeKor, `${pt.name} ${qty}개 ${skillTypeKor} 성공`);
     toast('✅ ' + pt.icon + ' ' + pt.name + ' ×' + qty + ' 획득!');
   }
 
@@ -5678,42 +6156,28 @@ function finishGatherPointExec(zoneId, pointId){
     }
   }
 
-  // 레벨별 숙련도 획득량 (100% = 레벨업)
-  // Lv1:200번, Lv2:400번, Lv3:800번, Lv4:1200번, Lv5:1600번
-  // Lv6:2000번, Lv7:2500번, Lv8+:500번씩 추가
-  const lv = G.gatherSkills[pt.skill].lv;
-  let needCount;
-  if(lv===1) needCount=200;
-  else if(lv===2) needCount=400;
-  else if(lv===3) needCount=800;
-  else if(lv===4) needCount=1200;
-  else if(lv===5) needCount=1600;
-  else if(lv===6) needCount=2000;
-  else if(lv===7) needCount=2500;
-  else needCount = 2500 + (lv-7)*500; // Lv8+: 500번씩 추가
-  const gain = Math.round((100/needCount)*1000)/1000;
-  G.gatherSkills[pt.skill].xp = Math.round((G.gatherSkills[pt.skill].xp + gain) * 1000) / 1000;
+  // 새 채집 레벨/숙련도 시스템
+  // 숙련도(xp): 채집 1번 = +1, 100이 되면 레벨업
+  if(!G.gatherSkills[pt.skill]) G.gatherSkills[pt.skill]={lv:1,xp:0};
+  G.gatherSkills[pt.skill].xp = (G.gatherSkills[pt.skill].xp||0) + 1;
 
   if(G.gatherSkills[pt.skill].xp >= 100){
-    G.gatherSkills[pt.skill].xp = 0; G.gatherSkills[pt.skill].lv++;
+    G.gatherSkills[pt.skill].xp = 0;
+    G.gatherSkills[pt.skill].lv++;
     const skillName = pt.skill==='gather'?'채집':(pt.skill==='logging'?'벌목':'채광');
     const newLv = G.gatherSkills[pt.skill].lv;
-    // 내구도 0 파손과 동시에 레벨업 시 하나의 팝업으로 합침
-    const toolName2b = pt.skill==='gather'?'호미':(pt.skill==='logging'?'도끼':'곡괭이');
-    const eqIdx2b = G.equippedTools?.[pt.skill];
-    const ti2b = (eqIdx2b!=null && G.inventory[eqIdx2b]?.name===toolName2b) ? G.inventory[eqIdx2b] : null;
-    if(ti2b && ti2b.dur <= 0){
-      // 내구도 0 + 레벨업 동시 알림
-      const buyOrRepair = ti2b.repairable===true ? '대장간 → [수리]에서 수리하세요.' : `대장간 → [구매]에서 새 ${toolName2b}를 구매하세요.`;
-      showLevelUpPopup(
-        `⛏ ${skillName} Lv${newLv}! + ⚠️ ${toolName2b} 파손!`,
-        `${skillName} 숙련도가 올랐습니다!\n채집 수량이 증가합니다.\n\n${toolName2b} 내구도가 0이 됐습니다.\n마을 → ${buyOrRepair}`
-      );
-    } else {
-      showLevelUpPopup(`⛏ ${skillName} Lv${newLv}!`, `${skillName} 숙련도가 올랐습니다!\n채집 수량이 증가합니다.`);
-    }
+    showLevelUpPopup(`⛏ ${skillName} Lv${newLv}!`, `${skillName} 숙련도가 올랐습니다!\n숙련도 50 이상 시 2개 채집!`);
+    addHistory('레벨업', `${skillName} 스킬이 Lv${newLv}이 되었다.`);
+    updateGatherHUD && updateGatherHUD();
   }
-  G.gatherPointState[pointId] = {status:'regen', endTime: Date.now() + pt.regenTime*1000};
+
+  // noRegen 아이템은 사라지지 않음 (5초 후 자동 재채집)
+  if(pt.noRegen){
+    // 포인트 상태 유지, 5초 후 다시 채집 가능 (타이머로 처리)
+    G.gatherPointState[pointId] = {status:'regen', endTime: Date.now() + 5000};
+  } else {
+    G.gatherPointState[pointId] = {status:'regen', endTime: Date.now() + (pt.regenTime||15)*1000};
+  }
   mapGatherPointId = null; _gatherPointId2 = '';
   document.getElementById('gm-popup').style.display = 'none';
 
@@ -5936,6 +6400,16 @@ function lupClose(){
 
 // ── 제작 레시피 전체 ─────────────────────────────
 const ALL_CRAFT_RECIPES = [
+  // 🔧 기본 도구 (튜토리얼 완료 시 제작법 지급)
+  {id:'tool_homi',     skill:'tool', name:'돌호미 제작',   icon:'🌱', result:'돌호미',
+   mats:{돌조각:5, 소나무:2}, resultQty:1, resultIcon:'🌱',
+   resultTool:{type:'tool', skill:'gather', dur:100, maxDur:100, initMaxDur:100, repairCount:0, repairable:false, icon:'images/tools/homi.png'}},
+  {id:'tool_pickaxe',  skill:'tool', name:'돌곡괭이 제작', icon:'⛏️', result:'돌곡괭이',
+   mats:{돌조각:5, 소나무:2}, resultQty:1, resultIcon:'⛏️',
+   resultTool:{type:'tool', skill:'mining', dur:100, maxDur:100, initMaxDur:100, repairCount:0, repairable:false, icon:'images/tools/pickaxe.png'}},
+  {id:'tool_axe',      skill:'tool', name:'돌도끼 제작',   icon:'🪓', result:'돌도끼',
+   mats:{돌조각:5, 소나무:2}, resultQty:1, resultIcon:'🪓',
+   resultTool:{type:'tool', skill:'logging', dur:100, maxDur:100, initMaxDur:100, repairCount:0, repairable:false, icon:'images/tools/axe.png'}},
   // 🔥 제련
   {id:'smelt_iron',    skill:'smelt', name:'철괴 제련',     icon:'⚙️', result:'철괴',
    mats:{철광석:10,석탄:2}, resultQty:1, resultIcon:'⚙️'},
@@ -6091,6 +6565,26 @@ function doCraft(recipeId){
   G.craftStats.totalCraft = (G.craftStats.totalCraft||0) + qty;
   mats.forEach(([n,q])=>{ G.craftStats.matUsed[n] = (G.craftStats.matUsed[n]||0) + q*qty; });
   toast(`🔨 ${r.result} ×${total} 제작 완료!`);
+  addHistory('제작', `${r.result} ${total}개 제작 성공`);
+  // 돌 도구 제작 시 관련 채집 숙련도 +2
+  const toolXpMap = {
+    '돌호미':    {skill:'gather',  xp:2},
+    '돌곡괭이':  {skill:'mining',  xp:2},
+    '돌도끼':    {skill:'logging', xp:2},
+  };
+  if(toolXpMap[r.result]){
+    const {skill, xp} = toolXpMap[r.result];
+    if(!G.gatherSkills[skill]) G.gatherSkills[skill]={lv:1,xp:0};
+    G.gatherSkills[skill].xp = (G.gatherSkills[skill].xp||0) + xp * qty;
+    // 레벨업 체크
+    while(G.gatherSkills[skill].xp >= 100){
+      G.gatherSkills[skill].xp -= 100;
+      G.gatherSkills[skill].lv++;
+      const sName = skill==='gather'?'채집':skill==='logging'?'벌목':'채광';
+      toast(`🎉 ${sName} 스킬 Lv${G.gatherSkills[skill].lv}!`);
+    }
+    toast(`📈 ${skill==='gather'?'채집':skill==='logging'?'벌목':'채광'} 숙련도 +${xp*qty}`);
+  }
   renderMats(); renderCraftList(); renderVillage(); saveGame();
 }
 
@@ -6429,6 +6923,10 @@ function openBuildingPanel(building){
   if(building==='mudogwan'){
     renderVillageSkillList && renderVillageSkillList();
   }
+  // 신단수 열릴 때 역사 렌더
+  if(building==='shindansu'){
+    renderShindansu && renderShindansu();
+  }
   // 대장간 열릴 때 보유 냥 업데이트
   const vg = document.getElementById('village-gold');
   if(vg) vg.textContent = G.gold;
@@ -6549,44 +7047,6 @@ function renderVillage(){
     showForge('repair');
   }
 
-  // ── 대장간: 도구 구매 ──
-  const toolEl = document.getElementById('village-tool-list');
-  if(toolEl){
-    toolEl.innerHTML = Object.entries(TOOL_DATA).map(([name,d])=>{
-      const ti = G.inventory.find(i=>i&&i.name===name);
-      const has = !!ti;
-      const broken = ti && ti.dur <= 0;
-      const repairCost = ti ? ti.maxDur - ti.dur : 0;
-      const durPct = ti ? Math.round(ti.dur/ti.maxDur*100) : 0;
-      const durColor = durPct>50?'#2a8a3a':durPct>25?'#c9922a':'#c0392b';
-      return `
-      <div style="padding:.5rem .2rem;border-bottom:1px solid var(--border)">
-        <div style="display:flex;align-items:center;gap:.5rem">
-          <span style="font-size:1.3rem">${d.icon}</span>
-          <div style="flex:1">
-            <div style="font-size:.78rem;font-weight:600;color:var(--text)">${name}
-              ${has?`<span style="font-size:.58rem;color:#6abf4a">✅보유</span>`:''}
-              ${broken?`<span style="font-size:.58rem;color:#e74c3c">💥파손</span>`:''}
-            </div>
-            <div style="font-size:.62rem;color:var(--text3)">${d.desc}</div>
-            ${has&&ti?`<div style="display:flex;align-items:center;gap:.4rem;margin-top:3px">
-              <div style="flex:1;background:var(--bg2);border-radius:2px;height:4px;overflow:hidden">
-                <div style="height:100%;width:${durPct}%;background:${durColor}"></div>
-              </div>
-              <span style="font-size:.58rem;color:var(--text3)">${ti.dur}/${ti.maxDur}</span>
-            </div>`:''}
-          </div>
-            <div style="display:flex;flex-direction:column;gap:.25rem;align-items:flex-end">
-            <button class="btn" style="font-size:.6rem;padding:.22rem .5rem;${c.gold<d.price?'opacity:.5':''}"
-              ${c.gold>=d.price?`onclick="buyToolVillage('${name}')"`:'disabled'}>
-              구매 ${d.price}냥
-            </button>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
   // ── 대장간: 제작 스킬 ──
   const csEl = document.getElementById('village-craft-skill-list-learn');
   if(csEl){
@@ -6677,15 +7137,6 @@ function renderVillage(){
         </div>`;
     }
   }
-}
-
-function buyToolVillage(name){
-  const d = TOOL_DATA[name];
-  if(!d||G.char.gold<d.price){toast('냥이 부족합니다!');return;}
-  G.char.gold -= d.price;
-  addToInventory({name,icon:d.icon,type:'tool',skill:d.skill,dur:d.dur,maxDur:d.dur,initMaxDur:d.dur,repairCount:0,repairable:false,qty:1});
-  toast(`🛒 ${name} 구매! (가방에 추가)`);
-  renderInv(); renderVillage(); updateHUD(); saveGame();
 }
 
 function repairToolVillage(name){
@@ -7181,6 +7632,15 @@ function checkBossKill(m, zid){
   }
   addLog(`🏆 보스 처치! +${m.xp}xp +${gold2}냥 +${rareDrop}×3`);
   toast(`🏆 보스 ${m.name} 처치!`);
+  // 보스 처치 기록 - 최초이면 특별 표시
+  if(!G.bossKill) G.bossKill = {};
+  const prevKills = G.bossKill[m.name] || 0;
+  if(prevKills === 0){
+    addHistory('보스', `🌟 최초! 보스 ${m.name} 처치 성공!`);
+  } else {
+    addHistory('보스', `보스 ${m.name} 처치 성공! (${prevKills+1}번째)`);
+  }
+  G.bossKill[m.name] = prevKills + 1;
 
   // 일반 몬스터 전체 리젠 복구 (보스 슬롯 포함)
   const zData = G.zoneMonsters[zid];
@@ -7569,6 +8029,7 @@ setInterval(()=>{
   <div id="tutorial-speaker">신단수</div>
   <div id="tutorial-text"><span id="tutorial-text-inner"></span><span id="tutorial-cursor">▌</span></div>
   <button id="tutorial-next" onclick="tutorialNext()">다음 ▶</button>
+  <button id="tutorial-skip-btn" onclick="skipTutorial()" style="display:none;position:absolute;top:.6rem;right:.8rem;background:none;border:1px solid var(--border2);color:var(--text3);font-size:.62rem;padding:.2rem .5rem;cursor:pointer;border-radius:2px">건너뛰기</button>
 </div>
 </body>
 </html>
