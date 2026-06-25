@@ -1,0 +1,113 @@
+/* ── 천손비사 튜토리얼 CSS ──────────────────────────── */
+#gather-arrow{
+  position:fixed;display:none;z-index:9000;
+  font-size:2.5rem;color:#4aaf5a;
+  filter:drop-shadow(0 0 8px rgba(74,175,90,0.8));
+  pointer-events:none;
+  animation:arrow-up-bounce .7s infinite alternate;
+}
+#gather-arrow-label{
+  position:fixed;display:none;z-index:9000;
+  background:rgba(0,0,0,0.9);color:#4aaf5a;
+  font-size:.82rem;padding:.35rem .75rem;border-radius:4px;
+  border:1px solid #4aaf5a;pointer-events:none;white-space:nowrap;
+}
+#shindansu-arrow{
+  position:fixed;display:none;z-index:8050;
+  font-size:3rem;color:#e8b84b;
+  left:38%;top:20%;
+  filter:drop-shadow(0 0 10px rgba(232,184,75,0.9));
+  pointer-events:none;
+  animation:arrow-up-bounce .7s infinite alternate;
+}
+#shindansu-arrow-label{
+  position:fixed;display:none;z-index:8050;
+  left:33%;top:30%;
+  background:rgba(0,0,0,0.88);color:#e8b84b;
+  font-size:.82rem;padding:.35rem .75rem;border-radius:4px;
+  border:1px solid #c9922a;pointer-events:none;white-space:nowrap;
+}
+/* 인벤토리 착용 안내 팁 */
+#inv-equip-tip{
+  display:none;
+  background:rgba(201,146,42,0.15);
+  border:1px solid #c9922a;border-radius:4px;
+  padding:.5rem .8rem;margin-bottom:.6rem;
+  font-size:.78rem;color:#e8b84b;text-align:center;
+  animation:tab-pulse 1.5s infinite;
+}
+#inv-arrow{
+  position:fixed;display:none;z-index:9000;
+  font-size:2.5rem;color:#e8b84b;
+  filter:drop-shadow(0 0 8px rgba(232,184,75,0.8));
+  pointer-events:none;
+  animation:arrow-up-bounce .7s infinite alternate;
+}
+@keyframes arrow-up-bounce{
+  0%{transform:translateY(0)}
+  100%{transform:translateY(-8px)}
+}
+#inv-arrow-label{
+  position:fixed;display:none;z-index:9000;
+  background:rgba(0,0,0,0.9);color:#e8b84b;
+  font-size:.82rem;padding:.35rem .75rem;border-radius:4px;
+  border:1px solid #c9922a;pointer-events:none;
+  white-space:nowrap;
+}
+#forge-arrow{
+  position:fixed;display:none;z-index:8050;
+  left:14%;top:38%;
+  font-size:3.5rem;color:#e8b84b;
+  animation:arrow-bounce .7s infinite alternate;
+  filter:drop-shadow(0 0 8px rgba(232,184,75,0.8));
+  pointer-events:none;
+  transform:rotate(-30deg);
+}
+@keyframes arrow-bounce{
+  0%{transform:rotate(-30deg) translateX(0)}
+  100%{transform:rotate(-30deg) translateX(-12px)}
+}
+#forge-arrow-label{
+  position:fixed;display:none;z-index:8050;
+  left:8%;top:34%;
+  background:rgba(0,0,0,0.85);color:#e8b84b;
+  font-size:.85rem;padding:.4rem .8rem;border-radius:4px;
+  border:1px solid #c9922a;pointer-events:none;
+  white-space:nowrap;
+}
+#tutorial-overlay{position:fixed;inset:0;z-index:8000;pointer-events:none}
+#tutorial-overlay.active{pointer-events:none}
+/* 신단수 빛 효과 */
+#shindansu-light{
+  position:absolute;left:33%;top:0;width:16%;height:50%;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,220,80,0.55) 0%,rgba(255,180,30,0.2) 40%,transparent 70%);
+  opacity:0;transition:opacity 1.5s;pointer-events:none;
+}
+#shindansu-light.show{opacity:1}
+/* 배경 어둡게 */
+#tutorial-dim{position:absolute;inset:0;background:rgba(0,0,0,0);transition:background 1.5s;pointer-events:none}
+#tutorial-dim.show{background:rgba(0,0,0,0.45)}
+/* 대화창 */
+#tutorial-dialog{
+  position:fixed;bottom:0;left:0;right:0;
+  background:linear-gradient(135deg,rgba(10,6,2,0.97),rgba(20,12,4,0.97));
+  border-top:2px solid #c9922a;padding:1.2rem 2rem 1.4rem;
+  transform:translateY(100%);transition:transform .5s ease;
+  z-index:8100;min-height:130px;
+}
+#tutorial-dialog.show{transform:translateY(0)}
+#tutorial-speaker{font-size:.8rem;color:#c9922a;font-weight:700;letter-spacing:.1em;margin-bottom:.4rem}
+#tutorial-text{font-size:1rem;color:#f0e6c8;line-height:1.8;min-height:3rem}
+#tutorial-cursor{display:inline-block;animation:blink .7s infinite;color:#c9922a;margin-left:4px}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#tutorial-next{
+  display:inline-block;
+  font-size:.9rem;font-weight:700;color:#1a1200;
+  background:#e8b84b;border:none;
+  padding:.5rem 3rem;cursor:pointer;border-radius:4px;
+  opacity:0;transition:opacity .3s;
+  letter-spacing:.1em;
+}
+#tutorial-next.show{opacity:1}
+/* 탭 강조 화살표 */
+.tab-highlight{animation:tab-pulse 1s infinite}
