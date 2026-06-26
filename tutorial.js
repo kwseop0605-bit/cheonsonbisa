@@ -21,14 +21,17 @@ const TUTORIAL_STEPS = [
   {speaker:'신단수', text:'호미는 채집, 도끼는 벌목, 곡괭이는 채광을 할 수 있다.\n이제 직접 사용해보도록 하자.'},
   // 퀘스트 1: 쑥 채집
   {speaker:'신단수', text:'먼저 채집을 해보거라.\n쑥 10개를 채집해서 가져오거라.'},
+  {speaker:'신단수', text:'채집 스킬을 내리겠노라.\n이제 들판에서 채집을 할 수 있느니라.', action:'give_gather_skill'},
   {speaker:'신단수', text:'쑥은 들판 채집터에서 캘 수 있느니라.\n하단의 채집터 탭을 눌러 들판으로 나아가거라.', action:'quest_gather_ssuk'},
   // 쑥 채집 완료 후
   {speaker:'신단수', text:'잘 하였노라. 돌호미 제작서를 내리겠다.', trigger:'ssuk_done', action:'give_homi_recipe'},
   {speaker:'신단수', text:'이번엔 벌목을 해보거라.\n숲속 채집터에서 나뭇가지 10개를 가져오거라.'},
+  {speaker:'신단수', text:'벌목 스킬을 내리겠노라.\n이제 숲속에서 벌목을 할 수 있느니라.', action:'give_logging_skill'},
   {speaker:'신단수', text:'하단의 채집터 탭을 눌러 숲속으로 나아가거라.', action:'quest_logging'},
   // 벌목 완료 후
   {speaker:'신단수', text:'잘 하였노라. 돌도끼 제작서를 내리겠다.', trigger:'logging_done', action:'give_axe_recipe'},
   {speaker:'신단수', text:'마지막으로 채광을 해보거라.\n광산 채광터에서 철광석 10개를 가져오거라.'},
+  {speaker:'신단수', text:'채광 스킬을 내리겠노라.\n이제 광산에서 채광을 할 수 있느니라.', action:'give_mining_skill'},
   {speaker:'신단수', text:'하단의 채집터 탭을 눌러 광산으로 나아가거라.', action:'quest_mining'},
   // 채광 완료 후
   {speaker:'신단수', text:'잘 하였노라. 돌곡괭이 제작서를 내리겠다.', trigger:'mining_done', action:'give_pickaxe_recipe'},
@@ -474,6 +477,11 @@ function skipTutorial(){
   if(!G.inventory.some(i=>i&&i.name==='도끼'))   addToInventory({name:'도끼',   icon:'images/tools/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
   G.tutorialDone = true;
   G.tutorialStep = 0;
+  // 생활 스킬 지급
+  if(!G.lifeSkills) G.lifeSkills = {};
+  G.lifeSkills['gather'] = true;
+  G.lifeSkills['logging'] = true;
+  G.lifeSkills['mining'] = true;
   giveToolRecipes();
   saveGame();
   // 화살표/강조 모두 제거
@@ -607,6 +615,21 @@ function runTutorialStep(){
       };
     });
     return;
+  } else if(step.action === 'give_gather_skill'){
+    if(!G.lifeSkills) G.lifeSkills = {};
+    G.lifeSkills['gather'] = true;
+    saveGame();
+    toast('🌿 채집 스킬을 습득했습니다!');
+  } else if(step.action === 'give_logging_skill'){
+    if(!G.lifeSkills) G.lifeSkills = {};
+    G.lifeSkills['logging'] = true;
+    saveGame();
+    toast('🪓 벌목 스킬을 습득했습니다!');
+  } else if(step.action === 'give_mining_skill'){
+    if(!G.lifeSkills) G.lifeSkills = {};
+    G.lifeSkills['mining'] = true;
+    saveGame();
+    toast('⛏ 채광 스킬을 습득했습니다!');
   } else if(step.action === 'give_homi_recipe'){
     if(!G.craftSkills) G.craftSkills = {};
     G.craftSkills['tool_homi'] = true;
