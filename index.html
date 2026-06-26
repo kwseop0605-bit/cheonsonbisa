@@ -944,11 +944,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
         <div style="font-size:.62rem;color:var(--text3);text-align:right"><span id="gm-mining-xp">0%</span></div>
       </div>
     </div>
-    <!-- 자동채집 버튼 -->
-    <button id="auto-gather-btn" onclick="toggleAutoGather();this.blur()" tabindex="-1"
-      style="padding:.3rem .7rem;background:rgba(10,40,20,.85);border:1px solid #2a7a3a;color:#6abf4a;font-size:.72rem;cursor:pointer;border-radius:3px;font-family:var(--font-body)">
-      🌿 자동채집 <span id="auto-gather-label">OFF</span>
-    </button>
     <!-- HP/MP 바 -->
     <div style="margin-left:auto;display:flex;gap:.8rem;align-items:center">
       <div style="display:flex;flex-direction:column;gap:.3rem;min-width:120px">
@@ -1004,6 +999,12 @@ const CHAR_IMAGES = {
 };
 
 const GATHER_IMAGES = {
+  '소나무': 'images/gather/pine.png',
+  '철광석': 'images/gather/iron_ore.png',
+  '석탄':   'images/gather/coal.png',
+  '수정':   'images/gather/crystal.png',
+  '은광석': 'images/gather/silver_ore.png',
+  '금광석': 'images/gather/gold_ore.png',
 };
 
 const MON_IMAGES = {
@@ -1416,7 +1417,7 @@ const MONSTER_VITALS = {
 const ZONES = [
   {id:'field', name:'들판', icon:'🌾', lv:'1~3',
    monsters:[
-    {id:'grasshopper',name:'메뚜기',   lv:1, maxHp:56,  atk:8,  def:2,  xp:10, gold:[10,25], drop:['메뚜기껍질','메뚜기액','메뚜기뼈','메뚜기독','풀잎']},
+    {id:'grasshopper',name:'메뚜기',   lv:1, maxHp:56,  atk:8,  def:2,  xp:10, gold:[10,25], drop:['메뚜기껍질','메뚜기액','메뚜기뼈','메뚜기독','풀잎'], noRegen:true},
     {id:'katydid',   name:'방아깨비', lv:2, maxHp:120, atk:15, def:4,  xp:13, gold:[12,30], drop:['방아깨비껍질','방아깨비액','방아깨비뼈','방아깨비독','나뭇가지']},
     {id:'cricket',   name:'귀뚜라미', lv:3, maxHp:170, atk:18, def:5,  xp:16, gold:[15,35], drop:['귀뚜라미껍질','귀뚜라미액','귀뚜라미뼈','귀뚜라미독','철광석']},
    ]},
@@ -1431,7 +1432,7 @@ const ZONES = [
     {id:'mantis',    name:'왕사마귀', lv:7, maxHp:560, atk:45, def:20, xp:36, gold:[40,80], drop:['사마귀낫발','사마귀날개','사마귀뼈','사마귀독','수정']},
     {id:'spider',    name:'독거미',   lv:8, maxHp:720, atk:55, def:26, xp:43, gold:[50,100],drop:['거미줄','거미독액','거미뼈','거미껍질','은광석']},
     {id:'centipede', name:'지네',     lv:9, maxHp:920, atk:67, def:33, xp:52, gold:[60,120],drop:['지네독','지네껍질','지네뼈','지네촉수','은광석']},
-    {id:'giant_wasp',name:'장수말벌', lv:10,maxHp:1200,atk:82, def:42, xp:62, gold:[80,150],drop:['장수말벌독','장수말벌날개','장수말벌껍질','장수말벌독침','금광석']},
+    {id:'giant_wasp',name:'장수말벌', lv:10,maxHp:1200,atk:82, def:42, xp:62, gold:[80,150],drop:['장수말벌독','장수말벌날개','장수말벌껍질','장수말벌독침','금광석'], noRegen:true},
    ]},
 ];
 
@@ -1517,69 +1518,20 @@ const GATHER_ZONES = [
 
 const GATHER_POINTS = {
   meadow: [
-    {id:'gp_쑥',   name:'쑥',   icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true},
-    {id:'gp_감초', name:'감초', icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true},
+    {id:'gp_쑥',   name:'쑥',   icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_감초', name:'감초', icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
   ],
   forest: [
-    {id:'gf_버섯',    name:'버섯',    icon:'🍄', skill:'gather', time:2, regenTime:18, pos:{x:15,y:54}, skillLvMin:2},
-    {id:'gf_버섯2',   name:'버섯',    icon:'🍄', skill:'gather', time:2, regenTime:18, pos:{x:30,y:66}, skillLvMin:2},
-    {id:'gf_수액',    name:'수액',    icon:'💧', skill:'gather', time:2, regenTime:22, pos:{x:48,y:58}, skillLvMin:3},
-    {id:'gf_수액2',   name:'수액',    icon:'💧', skill:'gather', time:2, regenTime:22, pos:{x:62,y:54}, skillLvMin:3},
-    {id:'gf_도라지',  name:'도라지',  icon:'🌿', skill:'gather', time:2, regenTime:20, pos:{x:78,y:62}, skillLvMin:3},
-    {id:'gf_나뭇가지', name:'나뭇가지',icon:'🪵', skill:'logging',time:2, regenTime:18, pos:{x:20,y:78}, skillLvMin:1, skillLvMax:4},
-    {id:'gf_나뭇가지2',name:'나뭇가지',icon:'🪵', skill:'logging',time:2, regenTime:18, pos:{x:38,y:80}, skillLvMin:1, skillLvMax:4},
-    {id:'gf_나뭇가지3',name:'나뭇가지',icon:'🪵', skill:'logging',time:2, regenTime:18, pos:{x:55,y:76}, skillLvMin:1, skillLvMax:4},
-    {id:'gf_목재',    name:'목재',    icon:'🪵', skill:'logging', time:2, regenTime:30, pos:{x:72,y:80}, skillLvMin:3},
-    {id:'gf_대나무',  name:'대나무',  icon:'🎍', skill:'logging', time:2, regenTime:25, pos:{x:88,y:56}, skillLvMin:4},
-    {id:'gf_소나무',  name:'소나무',  icon:'🌲', skill:'logging', time:2, regenTime:45, pos:{x:10,y:42}, skillLvMin:5},
-    {id:'gf_소나무2', name:'소나무',  icon:'🌲', skill:'logging', time:2, regenTime:45, pos:{x:85,y:40}, skillLvMin:5},
-    {id:'gf_산딸기',  name:'산딸기',  icon:'🍓', skill:'gather', time:2, regenTime:40, pos:{x:42,y:42}, fixedQty:1, skillLvMin:3, skillLvMax:7, berryGroup:'forest_berry'},
-    {id:'gf_오디',    name:'오디',    icon:'🍇', skill:'gather', time:2, regenTime:40, pos:{x:65,y:42}, fixedQty:1, skillLvMin:3, skillLvMax:7, berryGroup:'forest_berry'},
+    {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
+    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true},
   ],
   mountain: [
-    {id:'gm_약초',    name:'약초',    icon:'🌿', skill:'gather', time:2, regenTime:25, pos:{x:12,y:56}, skillLvMin:4},
-    {id:'gm_약초2',   name:'약초',    icon:'🌿', skill:'gather', time:2, regenTime:25, pos:{x:28,y:66}, skillLvMin:4},
-    {id:'gm_영지버섯',name:'영지버섯',icon:'🍄', skill:'gather', time:2, regenTime:32, pos:{x:48,y:54}, skillLvMin:5},
-    {id:'gm_영지버섯2',name:'영지버섯',icon:'🍄', skill:'gather', time:2, regenTime:32, pos:{x:62,y:62}, skillLvMin:5},
-    {id:'gm_천년초',  name:'천년초',  icon:'🌺', skill:'gather', time:2, regenTime:42, pos:{x:78,y:56}, skillLvMin:7},
-    {id:'gm_더덕',    name:'더덕',    icon:'🌱', skill:'gather', time:2, regenTime:30, pos:{x:88,y:64}, skillLvMin:6},
-    {id:'gm_영험한열매',name:'영험한열매',icon:'🍑', skill:'gather', time:2, regenTime:60, pos:{x:35,y:42}, fixedQty:1, skillLvMin:8, berryGroup:'mountain_berry'},
-    {id:'gm_신령열매', name:'신령열매', icon:'🔮', skill:'gather', time:2, regenTime:60, pos:{x:65,y:42}, fixedQty:1, skillLvMin:8, berryGroup:'mountain_berry'},
+    {id:'gm_약초',  name:'약초',  icon:'🌿', skill:'gather', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
+    {id:'gm_더덕',  name:'더덕',  icon:'🌱', skill:'gather', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true},
   ],
   mine: [
-    // ── 1층 — 철광석·석탄 ──────────
-    {id:'mn_철광석',  name:'철광석', icon:'⚙️', skill:'mining', time:2, regenTime:20, pos:{x:40,y:9},  skillLvMin:1},
-    {id:'mn_석탄',    name:'석탄',   icon:'🖤', skill:'mining', time:2, regenTime:16, pos:{x:46,y:11}, skillLvMin:1},
-    {id:'mn_철광석2', name:'철광석', icon:'⚙️', skill:'mining', time:2, regenTime:20, pos:{x:87,y:26}, skillLvMin:1},
-    {id:'mn_석탄2',   name:'석탄',   icon:'🖤', skill:'mining', time:2, regenTime:16, pos:{x:92,y:29}, skillLvMin:1},
-    {id:'mn_철광석3', name:'철광석', icon:'⚙️', skill:'mining', time:2, regenTime:20, pos:{x:29,y:50}, skillLvMin:1},
-    {id:'mn_석탄3',   name:'석탄',   icon:'🖤', skill:'mining', time:2, regenTime:16, pos:{x:35,y:50}, skillLvMin:1},
-    {id:'mn_철광석4', name:'철광석', icon:'⚙️', skill:'mining', time:2, regenTime:20, pos:{x:48,y:33}, skillLvMin:1},
-    {id:'mn_석탄4',   name:'석탄',   icon:'🖤', skill:'mining', time:2, regenTime:16, pos:{x:54,y:36}, skillLvMin:1},
-    {id:'mn_철광석5', name:'철광석', icon:'⚙️', skill:'mining', time:2, regenTime:20, pos:{x:44,y:69}, skillLvMin:1},
-    {id:'mn_석탄5',   name:'석탄',   icon:'🖤', skill:'mining', time:2, regenTime:16, pos:{x:50,y:72}, skillLvMin:1},
-    // ── 2층 — 구리광석·은광석 ──────────
-    {id:'mn_구리광석',  name:'구리광석', icon:'🔶', skill:'mining', time:2, regenTime:28, pos:{x:40,y:9},  skillLvMin:2},
-    {id:'mn_은광석',    name:'은광석',   icon:'🪙', skill:'mining', time:2, regenTime:36, pos:{x:46,y:11}, skillLvMin:2},
-    {id:'mn_구리광석2', name:'구리광석', icon:'🔶', skill:'mining', time:2, regenTime:28, pos:{x:87,y:26}, skillLvMin:2},
-    {id:'mn_은광석2',   name:'은광석',   icon:'🪙', skill:'mining', time:2, regenTime:36, pos:{x:92,y:29}, skillLvMin:2},
-    {id:'mn_구리광석3', name:'구리광석', icon:'🔶', skill:'mining', time:2, regenTime:28, pos:{x:29,y:50}, skillLvMin:2},
-    {id:'mn_은광석3',   name:'은광석',   icon:'🪙', skill:'mining', time:2, regenTime:36, pos:{x:35,y:50}, skillLvMin:2},
-    {id:'mn_구리광석4', name:'구리광석', icon:'🔶', skill:'mining', time:2, regenTime:28, pos:{x:48,y:33}, skillLvMin:2},
-    {id:'mn_은광석4',   name:'은광석',   icon:'🪙', skill:'mining', time:2, regenTime:36, pos:{x:54,y:36}, skillLvMin:2},
-    {id:'mn_구리광석5', name:'구리광석', icon:'🔶', skill:'mining', time:2, regenTime:28, pos:{x:44,y:69}, skillLvMin:2},
-    {id:'mn_은광석5',   name:'은광석',   icon:'🪙', skill:'mining', time:2, regenTime:36, pos:{x:50,y:72}, skillLvMin:2},
-    // ── 3층 — 수정·금광석 ──────────
-    {id:'mn_수정',    name:'수정',   icon:'💎', skill:'mining', time:2, regenTime:44, pos:{x:40,y:9},  skillLvMin:3},
-    {id:'mn_금광석',  name:'금광석', icon:'✨', skill:'mining', time:2, regenTime:56, pos:{x:46,y:11}, skillLvMin:3},
-    {id:'mn_수정2',   name:'수정',   icon:'💎', skill:'mining', time:2, regenTime:44, pos:{x:87,y:26}, skillLvMin:3},
-    {id:'mn_금광석2', name:'금광석', icon:'✨', skill:'mining', time:2, regenTime:56, pos:{x:92,y:29}, skillLvMin:3},
-    {id:'mn_수정3',   name:'수정',   icon:'💎', skill:'mining', time:2, regenTime:44, pos:{x:29,y:50}, skillLvMin:3},
-    {id:'mn_금광석3', name:'금광석', icon:'✨', skill:'mining', time:2, regenTime:56, pos:{x:35,y:50}, skillLvMin:3},
-    {id:'mn_수정4',   name:'수정',   icon:'💎', skill:'mining', time:2, regenTime:44, pos:{x:48,y:33}, skillLvMin:3},
-    {id:'mn_금광석4', name:'금광석', icon:'✨', skill:'mining', time:2, regenTime:56, pos:{x:54,y:36}, skillLvMin:3},
-    {id:'mn_수정5',   name:'수정',   icon:'💎', skill:'mining', time:2, regenTime:44, pos:{x:44,y:69}, skillLvMin:3},
-    {id:'mn_금광석5', name:'금광석', icon:'✨', skill:'mining', time:2, regenTime:56, pos:{x:50,y:72}, skillLvMin:3},
+    {id:'mn_철광석', name:'철광석', icon:'⚙️', skill:'mining', time:5, pos:{x:30,y:50}, skillLvMin:1, noRegen:true},
+    {id:'mn_석탄',   name:'석탄',   icon:'🖤', skill:'mining', time:5, pos:{x:55,y:45}, skillLvMin:1, noRegen:true},
   ],
 };
 
@@ -3610,7 +3562,7 @@ const SKILL_SHOP = [
   {id:'slash',   name:'용아참',     icon:'⚔', mp:12, maxCd:10, dmgMult:1.8, unlockLv:5,  price:1200, desc:'강력한 하향 베기 (ATK×1.8)'},
   {id:'ironwall',name:'철산고',     icon:'🛡', mp:10, maxCd:15, dmgMult:0, special:'def_up', unlockLv:5, price:1200, desc:'방어력 대폭 증가'},
   {id:'rest',    name:'운기조식',   icon:'🌬', mp:0,  maxCd:8,  dmgMult:0, special:'mp_heal', unlockLv:5, price:800,  desc:'내공 회복'},
-  {id:'ghost',   name:'환영보',     icon:'💨', mp:8,  maxCd:12, dmgMult:0, special:'ev_up', unlockLv:5, price:1000, desc:'회피 확률 +40%'},
+  {id:'ghost',   name:'환영보',     icon:'💨', mp:8,  maxCd:12, dmgMult:0, special:'ev_up', unlockLv:5, price:1000, desc:'회피 확률 +40%', noRegen:true},
   {id:'spin',    name:'회전발차기', icon:'🦵', mp:15, maxCd:12, dmgMult:2.0, unlockLv:7,  price:2500, desc:'강력한 회전 킥 (ATK×2.0)'},
   {id:'twin',    name:'선풍검',     icon:'🌀', mp:18, maxCd:15, dmgMult:1.3, hitCount:2, unlockLv:7, price:2500, desc:'회전 2타 (ATK×1.3×2)'},
   {id:'burst',   name:'기폭장',     icon:'💣', mp:22, maxCd:20, dmgMult:2.2, unlockLv:9, price:5000, desc:'내공 폭발 (ATK×2.2)'},
@@ -4369,115 +4321,9 @@ let _gatherZoneId2 = '';
 let _gatherPointId2 = '';
 let _gatherClickCount = 0;
 let _gatherClickWindowStart = 0;
-let autoGather = false; // 자동채집 상태
-let _autoGatherTimer = null; // 자동채집 재시도 타이머
 
-function toggleAutoGather(){
-  autoGather = !autoGather;
-  const btn = document.getElementById('auto-gather-btn');
-  const lbl = document.getElementById('auto-gather-label');
-  if(autoGather){
-    if(btn){ btn.style.background='rgba(10,60,10,.9)'; btn.style.borderColor='#4abf4a'; btn.style.color='#8fff8f'; }
-    if(lbl) lbl.textContent='ON';
-    toast('🌿 자동채집 ON');
-    // 현재 채집 중이 아니면 바로 시작
-    if(!mapGatherTimer) autoSelectGather();
-  } else {
-    if(btn){ btn.style.background='rgba(10,40,20,.85)'; btn.style.borderColor='#2a7a3a'; btn.style.color='#6abf4a'; }
-    if(lbl) lbl.textContent='OFF';
-    if(_autoGatherTimer){ clearTimeout(_autoGatherTimer); _autoGatherTimer=null; }
-    toast('🌿 자동채집 OFF');
-  }
-}
 
-function autoSelectGather(){
-  if(!autoGather) return;
-  if(!G.curGatherZone) return;
-  if(mapGatherTimer) return; // 이미 채집 중
 
-  const zoneId = G.curGatherZone.id;
-  const pts = GATHER_POINTS[zoneId] || [];
-
-  // 채집 가능한 포인트 찾기 (레벨 조건 + 리젠 완료 + 도구 착용)
-  const toolMap = {gather:'호미', logging:'도끼', mining:'곡괭이'};
-  const now = Date.now();
-
-  const available = pts.filter(pt=>{
-    // 광산이면 현재 층만 포함
-    if(zoneId === 'mine' && G.mineFloor && pt.skillLvMin !== G.mineFloor) return false;
-    // 리젠 중이면 제외
-    const st = G.gatherPointState[pt.id]||{status:'ready'};
-    if(st.status==='regen' && now < st.endTime) return false;
-    // berryGroup: 같은 그룹 중 하나라도 리젠 중이면 제외
-    if(pt.berryGroup){
-      const allPts = Object.values(GATHER_POINTS).flat();
-      const groupRegen = allPts.some(p=>
-        p.berryGroup===pt.berryGroup && p.id!==pt.id &&
-        (G.gatherPointState[p.id]||{}).status==='regen' &&
-        now < (G.gatherPointState[p.id]?.endTime||0)
-      );
-      if(groupRegen) return false;
-    }
-    // 레벨 조건
-    const sk = G.gatherSkills[pt.skill]||{lv:1};
-    if(pt.skillLvMin && sk.lv < pt.skillLvMin) return false;
-    if(pt.skillLvMax && sk.lv > pt.skillLvMax) return false;
-    // 도구 착용 확인
-    const needTool = toolMap[pt.skill];
-    if(needTool){
-      const eqIdx = G.equippedTools?.[pt.skill];
-      if(eqIdx==null || !G.inventory[eqIdx] || G.inventory[eqIdx].name!==needTool || (G.inventory[eqIdx].dur||0)<=0) return false;
-    }
-    return true;
-  });
-
-  if(available.length > 0){
-    const lastPt = pts.find(p=>p.id===_gatherPointId2);
-    const berries = available.filter(p=>p.fixedQty);
-    const normals = available.filter(p=>!p.fixedQty);
-    let target = null;
-
-    if(berries.length > 0){
-      // 열매 최우선: HP↔MP 교대
-      if(berries.length === 1){
-        target = berries[0];
-      } else {
-        // 마지막에 채집한 열매 이름 기억 (G.lastBerryName)
-        const lastBerryName = G.lastBerryName || null;
-        if(lastBerryName){
-          // 마지막과 다른 종류 열매 선택
-          const other = berries.find(p=>p.name !== lastBerryName);
-          target = other || berries[0];
-        } else {
-          target = berries[0];
-        }
-      }
-    } else if(normals.length > 0){
-      // 일반 채집물: 레벨 높은 순 → 같은 레벨이면 오래된 순
-      target = normals.sort((a,b)=>{
-        const lvA = a.skillLvMin || 1;
-        const lvB = b.skillLvMin || 1;
-        if(lvB !== lvA) return lvB - lvA;
-        const sa = G.gatherPointState[a.id]||{};
-        const sb = G.gatherPointState[b.id]||{};
-        return (sa.endTime||0) - (sb.endTime||0);
-      })[0];
-    }
-
-    if(target) startGatherPointExec(zoneId, target.id);
-  } else {
-    // 모두 리젠 중 → 가장 빨리 끝나는 것 기다리기
-    const regenPts = pts.filter(pt=>{
-      const st = G.gatherPointState[pt.id]||{status:'ready'};
-      return st.status==='regen' && now < st.endTime;
-    });
-    if(regenPts.length > 0){
-      const earliest = Math.min(...regenPts.map(p=>G.gatherPointState[p.id].endTime));
-      const wait = Math.max(500, earliest - now + 100);
-      _autoGatherTimer = setTimeout(autoSelectGather, wait);
-    }
-  }
-}
 
 function renderGatherZoneList(){
   const el = document.getElementById('gzone-list');
@@ -4737,13 +4583,6 @@ function openGatherMap(zone, startPointId){
     } else {
       mineFloorBtns.style.display = 'none';
     }
-  }  if(autoGather){
-    autoGather = false;
-    if(_autoGatherTimer){ clearTimeout(_autoGatherTimer); _autoGatherTimer=null; }
-    const btn = document.getElementById('auto-gather-btn');
-    const lbl = document.getElementById('auto-gather-label');
-    if(btn){ btn.style.background='rgba(10,40,20,.85)'; btn.style.borderColor='#2a7a3a'; btn.style.color='#6abf4a'; }
-    if(lbl) lbl.textContent='OFF';
   }
 
   const gm = document.getElementById('gathermap');
@@ -4915,14 +4754,14 @@ function renderGatherMapPoints(zoneId){
     const isMine = zone && zone.id === 'mine';
     const iconSize = isMine ? '6rem' : '4.8rem';
     const imgSize = isMine ? '120px' : '76px';
-    const iconHtml = pt.noRegen
+    const iconHtml = pt.hiddenIcon
       ? ``
       : hasImg
         ? `<img src="${GATHER_IMAGES[pt.name]}" style="width:${imgSize};height:${imgSize};object-fit:contain;${(isLocked||lvLocked2)?'filter:grayscale(1) opacity(.4)':''}" draggable="false">`
         : `<div style="${iconStyle.replace('2.4rem', iconSize)}">${pt.icon}</div>`;
 
-    // noRegen 포인트는 투명 클릭 영역만 (이미지에 식물이 이미 그려져 있음)
-    if(pt.noRegen){
+    // hiddenIcon 포인트는 투명 클릭 영역만 (이미지에 식물이 이미 그려져 있음)
+    if(pt.hiddenIcon){
       el.style.cssText = `position:absolute;left:${pt.pos.x}%;top:${pt.pos.y}%;transform:translate(-50%,-50%);width:160px;height:180px;cursor:pointer;z-index:10`;
       el.innerHTML = `<div style="width:100%;height:100%;border-radius:8px"></div>
         <div style="position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-size:.78rem;color:#c8e6a0;background:rgba(0,0,0,.65);padding:.1rem .5rem;border-radius:3px;white-space:nowrap;font-weight:600">${pt.name}</div>`;
@@ -5048,7 +4887,8 @@ function startGatherPointExec(zoneId, pointId){
   // 채집물 아래에 진행바 표시
   const el = document.getElementById(gmpId(pointId));
   if(el){
-    el.style.animation = 'gather-pulse .6s infinite alternate';
+    // hiddenIcon 포인트는 위치 고정 - pulse 애니메이션 적용 안 함
+    if(!pt.hiddenIcon) el.style.animation = 'gather-pulse .6s infinite alternate';
     // 기존 진행바 제거 후 새로 추가
     let bar = el.querySelector('.gmp-bar-wrap');
     if(!bar){
@@ -5236,21 +5076,19 @@ function finishGatherPointExec(zoneId, pointId){
   // noRegen 아이템: 리젠 없이 즉시 같은 포인트 자동 재채집
   if(pt.noRegen){
     G.gatherPointState[pointId] = {status:'ready'};
-    // 포인트 즉시 다시 표시
     const el2 = document.getElementById(gmpId(pointId));
     if(el2) el2.style.display = 'flex';
     if(G.curGatherZone) renderGatherItemList(G.curGatherZone);
+    updateGatherSkillHUD();
+    renderSkillList();
+    renderMats();
     saveGame();
     // 300ms 후 같은 포인트 자동 재시작
     setTimeout(()=>{
       if(G.curGatherZone && document.getElementById('gathermap')?.style.display !== 'none'){
-        const ptEl = document.getElementById(gmpId(pointId));
-        if(ptEl) ptEl.click();
+        startGatherPointExec(G.curGatherZone.id, pointId);
       }
     }, 300);
-    updateGatherSkillHUD();
-    renderSkillList();
-    renderMats();
     return;
   } else {
     G.gatherPointState[pointId] = {status:'regen', endTime: Date.now() + (pt.regenTime||15)*1000};
@@ -5295,11 +5133,6 @@ function finishGatherPointExec(zoneId, pointId){
   renderMats();
   if(G.curGatherZone) renderGatherItemList(G.curGatherZone);
   saveGame();
-
-  // 자동채집 ON이면 다음 채집 자동 시작
-  if(autoGather){
-    _autoGatherTimer = setTimeout(autoSelectGather, 300);
-  }
 }
 
 function cancelGatherMap(){
@@ -5317,13 +5150,6 @@ function cancelGatherMap(){
 
 function exitGatherMap(){
   cancelGatherMap();
-  // 자동채집 정지
-  if(_autoGatherTimer){ clearTimeout(_autoGatherTimer); _autoGatherTimer=null; }
-  autoGather = false;
-  const btn = document.getElementById('auto-gather-btn');
-  const lbl = document.getElementById('auto-gather-label');
-  if(btn){ btn.style.background='rgba(10,40,20,.85)'; btn.style.borderColor='#2a7a3a'; btn.style.color='#6abf4a'; }
-  if(lbl) lbl.textContent='OFF';
   document.getElementById('gathermap').style.display = 'none';
 }
 
