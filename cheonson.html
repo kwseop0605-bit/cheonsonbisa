@@ -4641,9 +4641,9 @@ function renderGatherItemList(zone){
       const lvLocked = curLv < lvMin || curLv > lvMax;
       const lvText = lvMax>=99 ? `Lv${lvMin}+` : `Lv${lvMin}~${lvMax}`;
 
-      // 스킬 해금 여부 (lifeSkills로 체크)
-      const gatherLocked = pt.skill==='gather'  && !(G.lifeSkills && G.lifeSkills['gather']);
-      const loggingLocked= pt.skill==='logging' && !(G.lifeSkills && G.lifeSkills['logging']);
+      // 스킬 해금 여부 - 채광만 lifeSkills 잠금 (채집/벌목은 항상 가능)
+      const gatherLocked = false;
+      const loggingLocked= false;
       const miningLocked = pt.skill==='mining'  && !(G.lifeSkills && G.lifeSkills['mining']);
 
       const hasGImg = typeof GATHER_IMAGES !== 'undefined' && GATHER_IMAGES[pt.name];
@@ -4867,11 +4867,10 @@ function renderGatherMapPoints(zoneId){
     ? pts.filter(p => p.skillLvMin === G.mineFloor)
     : pts;
 
-  // 스킬 해금 여부
   const skillUnlock = {
     gather:  true,
     logging: true,
-    mining:  G.lifeSkills && G.lifeSkills['mining'], // 사부에게 배워야 해금
+    mining:  G.lifeSkills && G.lifeSkills['mining'],
   };
   const zone = (typeof GATHER_ZONES !== 'undefined') ? GATHER_ZONES.find(z=>z.id===zoneId) : null;
 
