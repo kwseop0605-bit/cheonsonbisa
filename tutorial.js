@@ -697,7 +697,11 @@ function runTutorialStep(){
           showGatherArrow();
           // 채집터 탭만 클릭 허용
           const gBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('gather')];
-          if(gBtn) setTutLock(gBtn);
+          if(gBtn){
+            setTutLock(gBtn);
+            // 탭 클릭하는 순간 잠금 해제 → 채집터 안에서 자유롭게 클릭 가능
+            gBtn.addEventListener('click', ()=>clearTutLock(), {once:true});
+          }
         }, 300);
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
@@ -729,7 +733,11 @@ function runTutorialStep(){
           showGatherArrow();
           // 채집터 탭만 클릭 허용
           const gBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('gather')];
-          if(gBtn) setTutLock(gBtn);
+          if(gBtn){
+            setTutLock(gBtn);
+            // 탭 클릭하는 순간 잠금 해제 → 채집터 안에서 자유롭게 클릭 가능
+            gBtn.addEventListener('click', ()=>clearTutLock(), {once:true});
+          }
         }, 300);
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
@@ -761,7 +769,11 @@ function runTutorialStep(){
           showGatherArrow();
           // 채집터 탭만 클릭 허용
           const gBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('gather')];
-          if(gBtn) setTutLock(gBtn);
+          if(gBtn){
+            setTutLock(gBtn);
+            // 탭 클릭하는 순간 잠금 해제 → 채집터 안에서 자유롭게 클릭 가능
+            gBtn.addEventListener('click', ()=>clearTutLock(), {once:true});
+          }
         }, 300);
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
