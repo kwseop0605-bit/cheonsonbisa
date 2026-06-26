@@ -4911,18 +4911,28 @@ function renderGatherMapPoints(zoneId){
     const labelBg = (isLocked || lvLocked2) ? 'rgba(0,0,0,.8)' : 'rgba(0,0,0,.7)';
 
     // 아이콘: GATHER_IMAGES에 이미지가 있으면 img 태그, 없으면 이모지
+    // noRegen 포인트는 배경 이미지에 이미 식물이 그려져 있으므로 아이콘 숨김
     const hasImg = typeof GATHER_IMAGES !== 'undefined' && GATHER_IMAGES[pt.name];
     const isMine = zone && zone.id === 'mine';
     const iconSize = isMine ? '6rem' : '4.8rem';
     const imgSize = isMine ? '120px' : '76px';
-    const iconHtml = hasImg
-      ? `<img src="${GATHER_IMAGES[pt.name]}" style="width:${imgSize};height:${imgSize};object-fit:contain;${(isLocked||lvLocked2)?'filter:grayscale(1) opacity(.4)':''}" draggable="false">`
-      : `<div style="${iconStyle.replace('2.4rem', iconSize)}">${pt.icon}</div>`;
+    const iconHtml = pt.noRegen
+      ? ``
+      : hasImg
+        ? `<img src="${GATHER_IMAGES[pt.name]}" style="width:${imgSize};height:${imgSize};object-fit:contain;${(isLocked||lvLocked2)?'filter:grayscale(1) opacity(.4)':''}" draggable="false">`
+        : `<div style="${iconStyle.replace('2.4rem', iconSize)}">${pt.icon}</div>`;
 
-    el.innerHTML = `
-      ${iconHtml}
-      <div style="font-size:.85rem;color:${labelColor};background:${labelBg};padding:.15rem .5rem;border-radius:3px;white-space:nowrap;font-weight:600">${labelText}</div>
-    `;
+    // noRegen 포인트는 투명 클릭 영역만 (이미지에 식물이 이미 그려져 있음)
+    if(pt.noRegen){
+      el.style.cssText = `position:absolute;left:${pt.pos.x}%;top:${pt.pos.y}%;transform:translate(-50%,-50%);width:80px;height:80px;cursor:pointer;z-index:10`;
+      el.innerHTML = `<div style="width:100%;height:100%;border-radius:50%"></div>
+        <div style="position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:.75rem;color:#c8e6a0;background:rgba(0,0,0,.65);padding:.1rem .4rem;border-radius:3px;white-space:nowrap;font-weight:600">${labelText}</div>`;
+    } else {
+      el.innerHTML = `
+        ${iconHtml}
+        <div style="font-size:.85rem;color:${labelColor};background:${labelBg};padding:.15rem .5rem;border-radius:3px;white-space:nowrap;font-weight:600">${labelText}</div>
+      `;
+    }
 
     if(!isRegen){
       el.onclick = () => {
