@@ -596,7 +596,11 @@ function runTutorialStep(){
         setTimeout(()=>{
           showInvArrow();
           const invBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('inv')];
-          if(invBtn) setTutLock(invBtn);
+          if(invBtn){
+            setTutLock(invBtn);
+            // 탭 클릭하는 순간 잠금 해제 → 인벤토리 안에서 자유롭게 클릭 가능
+            invBtn.addEventListener('click', ()=>clearTutLock(), {once:true});
+          }
         }, 300);
         tutWaiting = true;
         waitForEquip('호미', ()=>{
@@ -627,7 +631,10 @@ function runTutorialStep(){
         setTimeout(()=>{
           showInvArrow();
           const invBtn2 = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('inv')];
-          if(invBtn2) setTutLock(invBtn2);
+          if(invBtn2){
+            setTutLock(invBtn2);
+            invBtn2.addEventListener('click', ()=>clearTutLock(), {once:true});
+          }
         }, 300);
         tutWaiting = true;
         waitForEquipAll(()=>{
