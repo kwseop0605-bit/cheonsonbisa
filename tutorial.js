@@ -45,6 +45,24 @@ const TUTORIAL_STEPS = [
 let tutStep = 0;
 let tutTyping = null;
 let tutWaiting = false;
+let _tutorialAllowedEl = null; // 현재 클릭 허용된 요소
+
+// 튜토리얼 클릭 잠금 - 허용된 요소 외 클릭 차단
+document.addEventListener('click', function(e){
+  if(!_tutorialAllowedEl) return;
+  if(G && G.tutorialDone){ _tutorialAllowedEl = null; return; }
+  // 허용된 요소이거나 그 자식이면 통과
+  if(_tutorialAllowedEl.contains(e.target) || _tutorialAllowedEl === e.target) return;
+  // 튜토리얼 대화창 클릭은 항상 허용
+  const dialog = document.getElementById('tutorial-dialog');
+  if(dialog && dialog.contains(e.target)) return;
+  // 그 외 차단
+  e.stopPropagation();
+  e.preventDefault();
+}, true); // capture 단계에서 가로채기
+
+function setTutLock(el){ _tutorialAllowedEl = el; }
+function clearTutLock(){ _tutorialAllowedEl = null; }
 
 function quitGame(){
   if(!confirm('게임을 종료하시겠습니까?\n(저장된 데이터는 유지됩니다)')) return;
@@ -462,6 +480,7 @@ function skipTutorial(){
   if(!confirm('튜토리얼을 건너뛰시겠습니까?\n(도구는 자동으로 지급됩니다)')) return;
   // 대화창 즉시 닫기
   document.getElementById('tutorial-dialog').classList.remove('show');
+  clearTutLock(); // 클릭 잠금 해제
   // 시작 타이머 취소
   if(_tutorialStartTimer){ clearTimeout(_tutorialStartTimer); _tutorialStartTimer = null; }
   // 모든 대기 타이머 강제 취소
@@ -554,6 +573,9 @@ function runTutorialStep(){
           highlightVillageBuilding('forge');
           document.getElementById('forge-arrow').style.display='block';
           document.getElementById('forge-arrow-label').style.display='block';
+          // 대장간 버튼만 클릭 허용
+          const forgeBtn = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'forge'"));
+          if(forgeBtn) setTutLock(forgeBtn);
         }, 400);
         tutStep++;
         nextBtn.onclick = tutorialNext;
@@ -571,10 +593,15 @@ function runTutorialStep(){
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = null; // 착용 대기 중 다음 버튼 완전 비활성화
-        setTimeout(()=>showInvArrow(), 300);
+        setTimeout(()=>{
+          showInvArrow();
+          const invBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('inv')];
+          if(invBtn) setTutLock(invBtn);
+        }, 300);
         tutWaiting = true;
         waitForEquip('호미', ()=>{
           tutWaiting = false;
+          clearTutLock();
           playEquipSound();
           hideInvArrow();
           setTimeout(()=>{
@@ -597,10 +624,15 @@ function runTutorialStep(){
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = null; // 착용 대기 중 완전 비활성화
-        setTimeout(()=>showInvArrow(), 300);
+        setTimeout(()=>{
+          showInvArrow();
+          const invBtn2 = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('inv')];
+          if(invBtn2) setTutLock(invBtn2);
+        }, 300);
         tutWaiting = true;
         waitForEquipAll(()=>{
           tutWaiting = false;
+          clearTutLock();
           playEquipSound();
           hideInvArrow();
           setTimeout(()=>{
@@ -656,7 +688,12 @@ function runTutorialStep(){
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = tutorialNext;
-        setTimeout(()=>showGatherArrow(), 300);
+        setTimeout(()=>{
+          showGatherArrow();
+          // 채집터 탭만 클릭 허용
+          const gBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('gather')];
+          if(gBtn) setTutLock(gBtn);
+        }, 300);
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
         _waitSsukTimer = setInterval(()=>{
@@ -667,7 +704,9 @@ function runTutorialStep(){
             hideGatherArrow();
             playGatherCompleteSound();
             toast('✨ 쑥 10개 채집 완료! 신단수로 돌아가세요.');
-            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu'); tutStep++; }, 800);
+            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu');
+              const sdBtn2 = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'shindansu'"));
+              if(sdBtn2) setTutLock(sdBtn2); tutStep++; }, 800);
           }
         }, 1000);
       };
@@ -681,7 +720,12 @@ function runTutorialStep(){
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = tutorialNext;
-        setTimeout(()=>showGatherArrow(), 300);
+        setTimeout(()=>{
+          showGatherArrow();
+          // 채집터 탭만 클릭 허용
+          const gBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('gather')];
+          if(gBtn) setTutLock(gBtn);
+        }, 300);
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
         _waitSsukTimer = setInterval(()=>{
@@ -692,7 +736,9 @@ function runTutorialStep(){
             hideGatherArrow();
             playGatherCompleteSound();
             toast('✨ 나뭇가지 10개 벌목 완료! 신단수로 돌아가세요.');
-            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu'); tutStep++; }, 800);
+            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu');
+              const sdBtn2 = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'shindansu'"));
+              if(sdBtn2) setTutLock(sdBtn2); tutStep++; }, 800);
           }
         }, 1000);
       };
@@ -706,7 +752,12 @@ function runTutorialStep(){
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = tutorialNext;
-        setTimeout(()=>showGatherArrow(), 300);
+        setTimeout(()=>{
+          showGatherArrow();
+          // 채집터 탭만 클릭 허용
+          const gBtn = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('gather')];
+          if(gBtn) setTutLock(gBtn);
+        }, 300);
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
         _waitSsukTimer = setInterval(()=>{
@@ -717,7 +768,9 @@ function runTutorialStep(){
             hideGatherArrow();
             playGatherCompleteSound();
             toast('✨ 철광석 10개 채광 완료! 신단수로 돌아가세요.');
-            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu'); tutStep++; }, 800);
+            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu');
+              const sdBtn2 = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'shindansu'"));
+              if(sdBtn2) setTutLock(sdBtn2); tutStep++; }, 800);
           }
         }, 1000);
       };
@@ -737,6 +790,9 @@ function runTutorialStep(){
           closeBuildingPanel();
           highlightVillageBuilding('shindansu');
           showShindansuArrow();
+          // 신단수 버튼만 클릭 허용
+          const sdBtn = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'shindansu'"));
+          if(sdBtn) setTutLock(sdBtn);
         }, 400);
         tutStep++; // trigger 단계 건너뜀
       };
@@ -920,6 +976,7 @@ function hideShindansuArrow(){
 }
 
 function endTutorial(){
+  clearTutLock();
   document.getElementById('tutorial-overlay').classList.remove('active');
   document.getElementById('tutorial-dim').classList.remove('show');
   document.getElementById('shindansu-light').classList.remove('show');
@@ -937,6 +994,7 @@ function tutorialTrigger(trigger){
   if(G.tutorialDone) return false;
   const step = TUTORIAL_STEPS[tutStep];
   if(step && step.trigger === trigger){
+    clearTutLock(); // 잠금 해제
     document.getElementById('tutorial-dialog').classList.add('show');
     // trigger step의 텍스트 직접 표시
     document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
