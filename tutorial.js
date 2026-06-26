@@ -126,7 +126,7 @@ function renderSdSummary(){
   const bossKills  = Object.values(G.bossKill||{}).reduce((s,v)=>s+v,0);
   el.innerHTML = `
     <div>📛 이름: <span style="color:var(--gold2)">${c.name}</span> (${c.gender==='남'?'남자':'여자'} · ${c.body||'균형'}형)</div>
-    <div>⭐ 레벨: <span style="color:var(--gold2)">Lv${c.lv}</span> · 경험치: ${c.exp}/${c.lv*100}</div>
+    <div>⭐ 레벨: <span style="color:var(--gold2)">Lv${c.lv}</span> · 경험치: ${c.xp||0}/${c.lv*100}</div>
     <div>❤️ 체력: ${c.mhp} · 💙 내공: ${c.mmp}</div>
     <div>⚔️ 공격력: ${c.atk} · 🛡 방어력: ${c.def}</div>
     <div>🐛 총 처치: <span style="color:var(--gold2)">${totalKills.toLocaleString()}</span>마리</div>
@@ -140,6 +140,8 @@ function renderSdSummary(){
   const skillNames = {gather:'채집',logging:'벌목',mining:'채광'};
   let html = '';
   ['gather','logging','mining'].forEach(s=>{
+    // lifeSkills로 해금된 스킬만 표시
+    if(!G.lifeSkills || !G.lifeSkills[s]) return;
     const sk = G.gatherSkills[s] || {lv:1,xp:0};
     const lv = sk.lv || 1;
     const xp = sk.xp || 0;
@@ -630,11 +632,7 @@ function runTutorialStep(){
         nextBtn.onclick = null; // 착용 대기 중 완전 비활성화
         setTimeout(()=>{
           showInvArrow();
-          const invBtn2 = document.querySelectorAll('.tab-btn')[['hunt','gather','char','skill','inv','village','build','quest'].indexOf('inv')];
-          if(invBtn2){
-            setTutLock(invBtn2);
-            invBtn2.addEventListener('click', ()=>clearTutLock(), {once:true});
-          }
+          // 이미 인벤토리에 있으므로 잠금 없이 자유롭게
         }, 300);
         tutWaiting = true;
         waitForEquipAll(()=>{
