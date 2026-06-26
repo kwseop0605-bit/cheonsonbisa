@@ -1004,11 +1004,11 @@ const CHAR_IMAGES = {
 };
 
 const GATHER_IMAGES = {
+  '쑥': 'images/gather/ssuk.png',
   '수정': 'images/gather/crystal.png',
   '은광석': 'images/gather/silver_ore.png',
   '금광석': 'images/gather/gold_ore.png',
   '소나무': 'images/gather/pine.png',
-  
   '철광석': 'images/gather/iron_ore.png',
   '석탄': 'images/gather/coal.png',
 };
@@ -1018,6 +1018,12 @@ const MON_IMAGES = {
   'grasshopper_battle': 'images/monsters/grasshopper_battle.png',
   'katydid_normal': 'images/monsters/katydid_normal.png',
   'katydid_battle': 'images/monsters/katydid_battle.png',
+  'centipede_normal': 'images/monsters/centipede_normal.png',
+  'centipede_battle': 'images/monsters/centipede_battle.png',
+  'giant_wasp_normal': 'images/monsters/giant_wasp_normal.png',
+  'giant_wasp_battle': 'images/monsters/giant_wasp_battle.png',
+  'spider_normal': 'images/monsters/spider_normal.png',
+  'spider_battle': 'images/monsters/spider_battle.png',
 };
 // ── SVG 드로잉 ────────────────────────────────────
 
@@ -1519,7 +1525,7 @@ const GATHER_ZONES = [
 const GATHER_POINTS = {
   meadow: [
     // 이미지 기준: 쑥(좌측), 감초(쑥 옆) - 아이템 사라지지 않음(noRegen:true)
-    {id:'gp_쑥',      name:'쑥',      icon:'🌱', skill:'gather', time:5, pos:{x:14,y:52}, skillLvMin:1, noRegen:true},
+    {id:'gp_쑥',      name:'쑥', icon:'images/gather/ssuk.png', skill:'gather', time:5, pos:{x:14,y:52}, skillLvMin:1, noRegen:true},
     {id:'gp_감초',    name:'감초',    icon:'🌿', skill:'gather', time:5, pos:{x:22,y:54}, skillLvMin:1, noRegen:true},
     {id:'gp_풀잎',    name:'풀잎',    icon:'🍃', skill:'gather', time:5, pos:{x:40,y:62}, skillLvMin:1, noRegen:true},
     {id:'gp_야생화',  name:'야생화',  icon:'🌸', skill:'gather', time:5, pos:{x:60,y:58}, skillLvMin:3, noRegen:true},
@@ -5969,7 +5975,7 @@ function openBuildingPanel(building){
       document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
     }
     if(building==='shindansu'){
-      const result = tutorialTrigger('shindansu_return') || tutorialTrigger('ssuk_done');
+      const result = tutorialTrigger('shindansu_return') || tutorialTrigger('ssuk_done') || tutorialTrigger('logging_done') || tutorialTrigger('mining_done');
       hideShindansuArrow();
     }
   }

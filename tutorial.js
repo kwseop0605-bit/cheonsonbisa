@@ -19,11 +19,24 @@ const TUTORIAL_STEPS = [
   // 신단수 복귀
   {speaker:'신단수', text:'불메장이에게 호미, 도끼, 곡괭이 착용법은 잘 배웠구나.', trigger:'shindansu_return'},
   {speaker:'신단수', text:'호미는 채집, 도끼는 벌목, 곡괭이는 채광을 할 수 있다.\n이제 직접 사용해보도록 하자.'},
-  {speaker:'신단수', text:'먼저 채집을 해보거라.\n쑥 5개를 채집해서 가져오거라.'},
+  // 퀘스트 1: 쑥 채집
+  {speaker:'신단수', text:'먼저 채집을 해보거라.\n쑥 10개를 채집해서 가져오거라.'},
   {speaker:'신단수', text:'쑥은 들판 채집터에서 캘 수 있느니라.\n하단의 채집터 탭을 눌러 들판으로 나아가거라.', action:'quest_gather_ssuk'},
-  // 쑥 채집 완료 후 신단수 복귀
-  {speaker:'신단수', text:'잘 하였노라.\n자연의 이치를 몸으로 느꼈느냐?', trigger:'ssuk_done'},
-  {speaker:'신단수', text:'천손의 길은 멀고도 험하나...\n하늘이 언제나 너와 함께하고 있음을 잊지 말아라.', action:'end_tutorial'},
+  // 쑥 채집 완료 후
+  {speaker:'신단수', text:'잘 하였노라. 돌호미 제작서를 내리겠다.', trigger:'ssuk_done', action:'give_homi_recipe'},
+  {speaker:'신단수', text:'이번엔 벌목을 해보거라.\n숲속 채집터에서 나뭇가지 10개를 가져오거라.'},
+  {speaker:'신단수', text:'하단의 채집터 탭을 눌러 숲속으로 나아가거라.', action:'quest_logging'},
+  // 벌목 완료 후
+  {speaker:'신단수', text:'잘 하였노라. 돌도끼 제작서를 내리겠다.', trigger:'logging_done', action:'give_axe_recipe'},
+  {speaker:'신단수', text:'마지막으로 채광을 해보거라.\n광산 채광터에서 철광석 10개를 가져오거라.'},
+  {speaker:'신단수', text:'하단의 채집터 탭을 눌러 광산으로 나아가거라.', action:'quest_mining'},
+  // 채광 완료 후
+  {speaker:'신단수', text:'잘 하였노라. 돌곡괭이 제작서를 내리겠다.', trigger:'mining_done', action:'give_pickaxe_recipe'},
+  {speaker:'신단수', text:'천손의 길은 멀고도 험하나...\n하늘이 언제나 너와 함께하고 있음을 잊지 말아라.'},
+  {speaker:'신단수', text:'마지막으로 한 가지 일러두겠다.\n채집, 벌목, 채광을 할 때 스페이스 키를 누르거나\n마우스를 클릭하면 채집 시간이 줄어드느니라.'},
+  {speaker:'신단수', text:'이 한울의 세상에서는 모든 것을\n네 스스로 구해야 하느니라.'},
+  {speaker:'신단수', text:'그리고 또 다른 천손을 찾아\n물물교환을 하며 살아가야 하느니라.'},
+  {speaker:'신단수', text:'나는 언제나 이 자리에서\n너를 지켜보고 있을 것이니라.', action:'end_tutorial'},
 ];
 
 let tutStep = 0;
@@ -421,6 +434,10 @@ function startTutorial(){
   tutStep = G.tutorialStep || 0;
   tutWaiting = false;
   showTab('village');
+  // 이전에 튜토리얼을 완료한 적 있으면 건너뛰기 표시
+  const hasCompletedBefore = localStorage.getItem('cheonson_tutorial_done') === 'true';
+  const skipBtn = document.getElementById('tutorial-skip-btn');
+  if(skipBtn) skipBtn.style.display = hasCompletedBefore ? 'inline-block' : 'none';
   _tutorialStartTimer = setTimeout(()=>{
     _tutorialStartTimer = null;
     document.getElementById('tutorial-overlay').classList.add('active');
@@ -590,10 +607,25 @@ function runTutorialStep(){
       };
     });
     return;
+  } else if(step.action === 'give_homi_recipe'){
+    if(!G.craftSkills) G.craftSkills = {};
+    G.craftSkills['tool_homi'] = true;
+    saveGame();
+    toast('📖 돌호미 제작서를 획득했습니다! (대장간 → 제작)');
+  } else if(step.action === 'give_axe_recipe'){
+    if(!G.craftSkills) G.craftSkills = {};
+    G.craftSkills['tool'] = true;
+    G.craftSkills['tool_axe'] = true;
+    saveGame();
+    toast('📖 돌도끼 제작서를 획득했습니다! (대장간 → 제작)');
+  } else if(step.action === 'give_pickaxe_recipe'){
+    if(!G.craftSkills) G.craftSkills = {};
+    G.craftSkills['tool_pickaxe'] = true;
+    saveGame();
+    toast('📖 돌곡괭이 제작서를 획득했습니다! (대장간 → 제작)');
   } else if(step.action === 'highlight_shindansu'){
     highlightVillageBuilding('shindansu');
   } else if(step.action === 'quest_gather_ssuk'){
-    // 텍스트 보여주고 → 다음 클릭 시 채집터 안내 + 쑥 5개 대기
     typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
       const nextBtn = document.getElementById('tutorial-next');
       nextBtn.classList.add('show');
@@ -601,25 +633,68 @@ function runTutorialStep(){
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = tutorialNext;
-        // 채집터 탭 화살표 표시
         setTimeout(()=>showGatherArrow(), 300);
-        // 쑥 5개 채집 대기
         tutWaiting = true;
         if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
         _waitSsukTimer = setInterval(()=>{
-          const ssukCount = (G.mats['쑥']||0) + (G.inventory.filter(i=>i&&i.name==='쑥').reduce((s,i)=>s+(i.qty||1),0));
-          if(ssukCount >= 5){
+          const cnt = (G.mats['쑥']||0) + (G.inventory.filter(i=>i&&i.name==='쑥').reduce((s,i)=>s+(i.qty||1),0));
+          if(cnt >= 10){
             clearInterval(_waitSsukTimer); _waitSsukTimer = null;
             tutWaiting = false;
             hideGatherArrow();
             playGatherCompleteSound();
-            toast('✨ 쑥 5개 채집 완료! 신단수로 돌아가세요.');
-            setTimeout(()=>{
-              showTab('village');
-              showShindansuArrow();
-              highlightVillageBuilding('shindansu');
-              tutStep++;
-            }, 800);
+            toast('✨ 쑥 10개 채집 완료! 신단수로 돌아가세요.');
+            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu'); tutStep++; }, 800);
+          }
+        }, 1000);
+      };
+    });
+    return;
+  } else if(step.action === 'quest_logging'){
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = tutorialNext;
+        setTimeout(()=>showGatherArrow(), 300);
+        tutWaiting = true;
+        if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
+        _waitSsukTimer = setInterval(()=>{
+          const cnt = G.mats['나뭇가지']||0;
+          if(cnt >= 10){
+            clearInterval(_waitSsukTimer); _waitSsukTimer = null;
+            tutWaiting = false;
+            hideGatherArrow();
+            playGatherCompleteSound();
+            toast('✨ 나뭇가지 10개 벌목 완료! 신단수로 돌아가세요.');
+            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu'); tutStep++; }, 800);
+          }
+        }, 1000);
+      };
+    });
+    return;
+  } else if(step.action === 'quest_mining'){
+    typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
+      const nextBtn = document.getElementById('tutorial-next');
+      nextBtn.classList.add('show');
+      nextBtn.onclick = ()=>{
+        document.getElementById('tutorial-dialog').classList.remove('show');
+        nextBtn.classList.remove('show');
+        nextBtn.onclick = tutorialNext;
+        setTimeout(()=>showGatherArrow(), 300);
+        tutWaiting = true;
+        if(_waitSsukTimer){ clearInterval(_waitSsukTimer); }
+        _waitSsukTimer = setInterval(()=>{
+          const cnt = G.mats['철광석']||0;
+          if(cnt >= 10){
+            clearInterval(_waitSsukTimer); _waitSsukTimer = null;
+            tutWaiting = false;
+            hideGatherArrow();
+            playGatherCompleteSound();
+            toast('✨ 철광석 10개 채광 완료! 신단수로 돌아가세요.');
+            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu'); tutStep++; }, 800);
           }
         }, 1000);
       };
@@ -648,9 +723,11 @@ function runTutorialStep(){
     G.tutorialDone = true;
     G.tutorialStep = 0;
     giveToolRecipes();
+    // 완료 이력 저장 (다음 새 게임에서 건너뛰기 표시용)
+    localStorage.setItem('cheonson_tutorial_done', 'true');
     saveGame();
     playTutorialCompleteSound();
-    setTimeout(endTutorial, 3000);
+    setTimeout(()=>{ endTutorial(); }, 3000);
   }
 
   // 타이핑 효과
