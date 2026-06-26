@@ -1004,12 +1004,6 @@ const CHAR_IMAGES = {
 };
 
 const GATHER_IMAGES = {
-  '수정': 'images/gather/crystal.png',
-  '은광석': 'images/gather/silver_ore.png',
-  '금광석': 'images/gather/gold_ore.png',
-  '소나무': 'images/gather/pine.png',
-  '철광석': 'images/gather/iron_ore.png',
-  '석탄': 'images/gather/coal.png',
 };
 
 const MON_IMAGES = {
@@ -4654,18 +4648,21 @@ function renderGatherItemList(zone){
       const lvLocked = curLv < lvMin || curLv > lvMax;
       const lvText = lvMax>=99 ? `Lv${lvMin}+` : `Lv${lvMin}~${lvMax}`;
 
-      // 채광 스킬 해금 여부 (사부에게 배워야)
-      const miningLocked = pt.skill==='mining' && !(G.lifeSkills && G.lifeSkills['mining']);
+      // 스킬 해금 여부 (lifeSkills로 체크)
+      const gatherLocked = pt.skill==='gather'  && !(G.lifeSkills && G.lifeSkills['gather']);
+      const loggingLocked= pt.skill==='logging' && !(G.lifeSkills && G.lifeSkills['logging']);
+      const miningLocked = pt.skill==='mining'  && !(G.lifeSkills && G.lifeSkills['mining']);
 
       const hasGImg = typeof GATHER_IMAGES !== 'undefined' && GATHER_IMAGES[pt.name];
       const iconEl = hasGImg
         ? `<img src="${GATHER_IMAGES[pt.name]}" style="width:1.8rem;height:1.8rem;object-fit:contain" draggable="false">`
         : `<span style="font-size:1.8rem;filter:grayscale(1)">${pt.icon}</span>`;
 
-      if(miningLocked){
+      if(gatherLocked || loggingLocked || miningLocked){
+        const skillName2 = pt.skill==='gather'?'채집':pt.skill==='logging'?'벌목':'채광';
         card.style.opacity = '0.4';
         card.style.cursor = 'not-allowed';
-        card.innerHTML = iconEl + '<div class="mtype-info"><div class="mtype-name">' + pt.name + '</div><div class="mtype-desc" style="font-size:.62rem;color:#e74c3c">🔒 채광 스킬 필요 (마을 사부)</div></div>';
+        card.innerHTML = iconEl + `<div class="mtype-info"><div class="mtype-name">${pt.name}</div><div class="mtype-desc" style="font-size:.62rem;color:#e74c3c">🔒 ${skillName2} 스킬 필요 (신단수 퀘스트)</div></div>`;
       } else if(lvLocked){
         card.style.opacity = '0.4';
         card.style.cursor = 'not-allowed';
