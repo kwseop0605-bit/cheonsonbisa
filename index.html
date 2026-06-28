@@ -904,10 +904,24 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 <div id="gathermap" style="display:none;position:fixed;inset:0;z-index:500;overflow:hidden">
   <canvas id="gmap-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
   <img id="gmap-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
+
+  <!-- 채집터 내 인벤토리 오버레이 -->
+  <div id="gather-inv-overlay" style="display:none;position:absolute;top:0;right:0;bottom:0;width:320px;max-width:90vw;background:rgba(10,7,3,.97);border-left:2px solid var(--border2);z-index:600;overflow-y:auto;padding:.8rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)">
+      <span style="color:var(--gold2);font-weight:700;font-size:.9rem">🎒 인벤토리</span>
+      <button onclick="toggleGatherInv()" style="background:none;border:1px solid var(--border2);color:var(--text3);font-size:.85rem;padding:.2rem .6rem;cursor:pointer;border-radius:3px">✕ 닫기</button>
+    </div>
+    <!-- 장착 슬롯 -->
+    <div style="font-size:.7rem;color:var(--text3);margin-bottom:.4rem">⚔ 장착 도구</div>
+    <div id="gather-inv-equip" style="display:flex;gap:.4rem;margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)"></div>
+    <!-- 인벤토리 슬롯 -->
+    <div style="font-size:.7rem;color:var(--text3);margin-bottom:.4rem">📦 가방</div>
+    <div id="gather-inv-slots" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.3rem"></div>
+  </div>
   <!-- 상단 HUD -->
   <div style="position:absolute;top:0;left:0;right:0;padding:.4rem .8rem;background:rgba(0,0,10,.75);display:flex;align-items:center;gap:.8rem;z-index:10">
     <button class="back-btn" onclick="exitGatherMap()">← 나가기</button>
-    <button onclick="showTab('inv');exitGatherMap()" style="padding:.3rem .8rem;background:rgba(20,60,20,.6);border:1px solid #2a8a3a;color:#6abf4a;font-size:.78rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body)">🎒 인벤토리</button>
+    <button onclick="toggleGatherInv()" style="padding:.3rem .8rem;background:rgba(20,60,20,.6);border:1px solid #2a8a3a;color:#6abf4a;font-size:.78rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body)">🎒 인벤토리</button>
     <button id="gm-goto-battle-btn" onclick="gotoHuntFromGather()" style="display:none;padding:.3rem .8rem;background:rgba(80,20,20,.5);border:1px solid #8a3a2a;color:#ff8a6a;font-size:.78rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body)">⚔ 사냥터</button>
     <!-- 광산 층 이동 버튼 -->
     <div id="gm-mine-floors" style="display:none;gap:.3rem;align-items:center">
@@ -5157,6 +5171,48 @@ function cancelGatherMap(){
 function exitGatherMap(){
   cancelGatherMap();
   document.getElementById('gathermap').style.display = 'none';
+  document.getElementById('gather-inv-overlay').style.display = 'none';
+}
+
+function toggleGatherInv(){
+  const ov = document.getElementById('gather-inv-overlay');
+  const isOpen = ov.style.display !== 'none';
+  if(isOpen){ ov.style.display='none'; return; }
+  ov.style.display = 'block';
+  renderGatherInvOverlay();
+}
+
+function renderGatherInvOverlay(){
+  // 장착 도구
+  const equipEl = document.getElementById('gather-inv-equip');
+  if(equipEl){
+    const tools = ['gather','logging','mining'];
+    const toolName = {gather:'호미',logging:'도끼',mining:'곡괭이'};
+    equipEl.innerHTML = tools.map(s=>{
+      const idx = G.equippedTools?.[s];
+      const ti = (idx!=null && G.inventory[idx]) ? G.inventory[idx] : null;
+      const durPct = ti ? Math.round(ti.dur/ti.maxDur*100) : 0;
+      return `<div style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:.3rem;text-align:center;font-size:.65rem">
+        ${ti ? (ti.icon && ti.icon.startsWith('images/') ? `<img src="${ti.icon}" style="width:2rem;height:2rem;object-fit:contain">` : `<span style="font-size:1.2rem">${ti.icon||'🔧'}</span>`) : `<span style="color:var(--text3)">${toolName[s]}</span>`}
+        ${ti ? `<div style="color:var(--text2);font-size:.6rem">${ti.name}</div><div style="height:3px;background:var(--bg3);border-radius:2px;margin-top:2px"><div style="height:100%;width:${durPct}%;background:${durPct>50?'#4a8':'#e74c3c'};border-radius:2px"></div></div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  // 인벤토리 슬롯
+  const slotsEl = document.getElementById('gather-inv-slots');
+  if(slotsEl){
+    slotsEl.innerHTML = G.inventory.map((item,idx)=>{
+      if(!item) return `<div style="aspect-ratio:1;background:var(--bg2);border:1px solid var(--border);border-radius:4px"></div>`;
+      const icon = item.icon && item.icon.startsWith('images/')
+        ? `<img src="${item.icon}" style="width:2rem;height:2rem;object-fit:contain">`
+        : `<span style="font-size:1.3rem">${item.icon||'📦'}</span>`;
+      return `<div onclick="showItemContextMenu(${idx},event)" style="aspect-ratio:1;background:var(--bg2);border:1px solid var(--border2);border-radius:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;padding:.2rem;font-size:.6rem;color:var(--text2)">
+        ${icon}
+        <div style="font-size:.58rem;text-align:center;line-height:1.2;margin-top:2px">${item.name}</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 (()=>{

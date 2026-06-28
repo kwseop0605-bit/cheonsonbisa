@@ -166,24 +166,31 @@ function renderSdSummary(){
 function renderSdCraft(){
   const el = document.getElementById('sd-craft-content');
   if(!el) return;
-  const learned = G.craftSkills||[];
+  const learned = G.craftSkills || {};
   const all = (typeof ALL_CRAFT_RECIPES !== 'undefined') ? ALL_CRAFT_RECIPES : [];
   if(!all.length){ el.innerHTML='<div style="color:var(--text3)">제작 레시피 없음</div>'; return; }
 
+  // 습득한 스킬의 레시피만 표시
   let html = '';
   all.forEach(r=>{
-    const canLearn = learned.includes(r.id);
-    const mats = (r.mats||[]).map(m=>`${m.name}×${m.qty}`).join(', ');
+    // tool 카테고리: tool_homi/tool_axe/tool_pickaxe 각각 체크
+    const isLearned = learned[r.id] || learned[r.skill];
+    if(!isLearned) return; // 미습득은 표시 안 함
+    const mats = Object.entries(r.mats||{}).map(([n,q])=>{
+      const have = G.mats[n]||0;
+      const ok = have>=q;
+      return `<span style="color:${ok?'#6abf4a':'#e74c3c'}">${n}×${q}</span>`;
+    }).join(' + ');
     html += `
       <div style="padding:.4rem 0;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem">
-        <span style="font-size:.65rem;padding:.1rem .35rem;border-radius:2px;background:${canLearn?'rgba(74,175,90,.25)':'rgba(80,80,80,.3)'};color:${canLearn?'#6abf4a':'var(--text3)'}">${canLearn?'습득':'미습득'}</span>
+        <span style="font-size:1rem">${r.resultIcon||'⚒️'}</span>
         <div>
           <div style="color:var(--gold2);font-size:.75rem">${r.result}</div>
           <div style="color:var(--text3);font-size:.65rem">재료: ${mats||'없음'}</div>
         </div>
       </div>`;
   });
-  el.innerHTML = html || '<div style="color:var(--text3)">제작 레시피 없음</div>';
+  el.innerHTML = html || '<div style="color:var(--text3)">습득한 제작법이 없습니다.</div>';
 }
 
 function renderSdHistory(){
@@ -673,6 +680,7 @@ function runTutorialStep(){
     toast('⛏ 채광 스킬을 습득했습니다!');
   } else if(step.action === 'give_homi_recipe'){
     if(!G.craftSkills) G.craftSkills = {};
+    G.craftSkills['tool'] = true;
     G.craftSkills['tool_homi'] = true;
     saveGame();
     toast('📖 돌호미 제작서를 획득했습니다! (대장간 → 제작)');
@@ -684,6 +692,7 @@ function runTutorialStep(){
     toast('📖 돌도끼 제작서를 획득했습니다! (대장간 → 제작)');
   } else if(step.action === 'give_pickaxe_recipe'){
     if(!G.craftSkills) G.craftSkills = {};
+    G.craftSkills['tool'] = true;
     G.craftSkills['tool_pickaxe'] = true;
     saveGame();
     toast('📖 돌곡괭이 제작서를 획득했습니다! (대장간 → 제작)');
