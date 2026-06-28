@@ -4917,7 +4917,7 @@ function startGatherPointExec(zoneId, pointId){
     if(!bar){
       bar = document.createElement('div');
       bar.className = 'gmp-bar-wrap';
-      bar.style.cssText = 'width:90px;height:10px;background:rgba(0,0,0,.6);border-radius:5px;margin-top:5px;overflow:hidden;border:1px solid rgba(255,255,255,.2)';
+      bar.style.cssText = 'width:135px;height:15px;background:rgba(0,0,0,.6);border-radius:7px;margin-top:6px;overflow:hidden;border:1px solid rgba(255,255,255,.2)';
       const inner = document.createElement('div');
       inner.className = 'gmp-bar-inner';
       inner.style.cssText = 'height:100%;background:linear-gradient(90deg,#2a8a3a,#4aaf5a);width:0%;transition:width .25s';
@@ -5104,6 +5104,8 @@ function finishGatherPointExec(zoneId, pointId){
   // noRegen 아이템: 리젠 없이 즉시 같은 포인트 자동 재채집
   if(pt.noRegen){
     G.gatherPointState[pointId] = {status:'ready'};
+    // 변수 초기화 먼저 (자동 재시작 조건 체크에 필요)
+    mapGatherPointId = null; _gatherPointId2 = '';
     const el2 = document.getElementById(gmpId(pointId));
     if(el2) el2.style.display = 'flex';
     if(G.curGatherZone) renderGatherItemList(G.curGatherZone);
@@ -5111,12 +5113,12 @@ function finishGatherPointExec(zoneId, pointId){
     renderSkillList();
     renderMats();
     saveGame();
-    // 300ms 후 같은 포인트 자동 재시작 - 다른 포인트 클릭했으면 중단
+    // 300ms 후 같은 포인트 자동 재시작
     const thisPointId = pointId;
     setTimeout(()=>{
-      if(!G.curGatherZone) return; // 채집터 나감
-      if(document.getElementById('gathermap')?.style.display === 'none') return; // 맵 닫힘
-      if(mapGatherPointId || _gatherPointId2) return; // 이미 다른 포인트 채집중
+      if(!G.curGatherZone) return;
+      if(document.getElementById('gathermap')?.style.display === 'none') return;
+      if(mapGatherPointId || _gatherPointId2) return; // 다른 포인트 채집 중이면 중단
       startGatherPointExec(G.curGatherZone.id, thisPointId);
     }, 300);
     return;
