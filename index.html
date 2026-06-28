@@ -4840,13 +4840,17 @@ function startGatherPointExec(zoneId, pointId){
 
   // ── 도구 체크 (채집 시작 전) ──
   const toolMap3 = {gather:'호미', mining:'곡괭이', logging:'도끼'};
+  const toolMap3alt = {gather:'돌호미', mining:'돌곡괭이', logging:'돌도끼'};
   const needTool = toolMap3[pt.skill];
   if(!G.equippedTools) G.equippedTools={gather:null,logging:null,mining:null};
   let toolItem = null;
   const equippedIdx = G.equippedTools[pt.skill];
-  // 반드시 슬롯에 착용된 도구만 사용 (가방에 있어도 착용 안 하면 불가)
-  if(equippedIdx!=null && G.inventory[equippedIdx]?.name===needTool && (G.inventory[equippedIdx]?.dur||0)>0){
-    toolItem = G.inventory[equippedIdx];
+  // 해당 스킬 슬롯에 착용된 도구 (호미/돌호미, 곡괭이/돌곡괭이, 도끼/돌도끼 모두 허용)
+  if(equippedIdx!=null){
+    const inv = G.inventory[equippedIdx];
+    if(inv && (inv.name===toolMap3[pt.skill] || inv.name===toolMap3alt[pt.skill]) && (inv.dur||0)>0){
+      toolItem = inv;
+    }
   }
   // 슬롯에 착용 안 했거나 도구가 없는 경우
   const hasTool = G.inventory.some(i=>i&&i.name===needTool&&(i.dur||0)>0);
