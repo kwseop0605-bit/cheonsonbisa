@@ -133,6 +133,10 @@ function renderSdSummary(){
     <div>👹 보스 처치: <span style="color:var(--gold2)">${bossKills.toLocaleString()}</span>회</div>
     <div>🎒 보유 냥: <span style="color:var(--gold2)">${(G.gold||0).toLocaleString()}</span>냥</div>
     <div style="font-size:.65rem;color:var(--text3);margin-top:.3rem">📅 각성일: ${c.createdAt ? getGameDate(c.createdAt) : '-'}</div>
+    <div style="margin-top:.4rem;font-size:.72rem">${G.tutorialDone
+      ? '📖 천손 입문 <span style="color:#6abf4a;font-weight:700">완료 ✅</span>'
+      : `📖 천손 입문 <span style="color:#e8b84b;font-weight:700">진행중 🔄 (${G.tutorialStep||0}단계)</span>`
+    }</div>
   `;
   const sk = document.getElementById('sd-skill-content');
   if(!sk) return;

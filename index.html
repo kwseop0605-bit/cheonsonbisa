@@ -1000,6 +1000,7 @@ const CHAR_IMAGES = {
 };
 
 const GATHER_IMAGES = {
+  '쑥':   'images/gather/ssuk.png',
   '소나무': 'images/gather/pine.png',
   '철광석': 'images/gather/iron_ore.png',
   '석탄':   'images/gather/coal.png',
@@ -5011,9 +5012,13 @@ function finishGatherPointExec(zoneId, pointId){
     if(!G.gatherStats) G.gatherStats={itemCount:{},totalGather:0,toolUse:{}};
     G.gatherStats.itemCount[pt.name] = (G.gatherStats.itemCount[pt.name]||0) + qty;
     G.gatherStats.totalGather = (G.gatherStats.totalGather||0) + 1;
-    // 역사 기록
+    // 역사 기록 - 최초 채집만
     const skillTypeKor = {gather:'채집',mining:'채광',logging:'벌목'}[pt.skill]||'채집';
-    addHistory(skillTypeKor, `${pt.name} ${qty}개 ${skillTypeKor} 성공`);
+    if(!G.gatherStats.firstTime) G.gatherStats.firstTime = {};
+    if(!G.gatherStats.firstTime[pt.name]){
+      G.gatherStats.firstTime[pt.name] = true;
+      addHistory(skillTypeKor, `${pt.name} 최초 ${skillTypeKor} 성공`);
+    }
     toast('✅ ' + pt.icon + ' ' + pt.name + ' ×' + qty + ' 획득!');
   }
 
@@ -5470,7 +5475,12 @@ function doCraft(recipeId){
   G.craftStats.totalCraft = (G.craftStats.totalCraft||0) + qty;
   mats.forEach(([n,q])=>{ G.craftStats.matUsed[n] = (G.craftStats.matUsed[n]||0) + q*qty; });
   toast(`🔨 ${r.result} ×${total} 제작 완료!`);
-  addHistory('제작', `${r.result} ${total}개 제작 성공`);
+  // 역사 기록 - 최초 제작만
+  if(!G.craftStats.firstTime) G.craftStats.firstTime = {};
+  if(!G.craftStats.firstTime[r.result]){
+    G.craftStats.firstTime[r.result] = true;
+    addHistory('제작', `${r.result} 최초 제작 성공`);
+  }
   // 돌 도구 제작 시 관련 채집 숙련도 +2
   const toolXpMap = {
     '돌호미':    {skill:'gather',  xp:2},
@@ -6571,8 +6581,11 @@ function renderMats(){
   if(!entries.length){el.innerHTML='<div style="color:var(--text3);font-size:.75rem;padding:.5rem">재료가 없습니다</div>';return;}
   entries.forEach(([name,qty])=>{
     const d=document.createElement('div');
-    d.style.cssText='display:flex;justify-content:space-between;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.75rem';
-    d.innerHTML='<span style="color:var(--text)">'+name+'</span><span style="color:var(--gold2)">'+qty+'개</span>';
+    d.style.cssText='display:flex;align-items:center;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.75rem';
+    const img = GATHER_IMAGES && GATHER_IMAGES[name]
+      ? `<img src="${GATHER_IMAGES[name]}" style="width:1.6rem;height:1.6rem;object-fit:contain;flex-shrink:0" draggable="false">`
+      : `<span style="font-size:1.1rem;flex-shrink:0">📦</span>`;
+    d.innerHTML=`${img}<span style="color:var(--text);flex:1">${name}</span><span style="color:var(--gold2)">${qty}개</span>`;
     el.appendChild(d);
   });
 }
