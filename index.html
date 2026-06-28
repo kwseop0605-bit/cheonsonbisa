@@ -4903,20 +4903,24 @@ function startGatherPointExec(zoneId, pointId){
   _gatherStartRemain = 5000;
   _gatherClickCount = 0;
 
+  // 기존 채집 중이던 포인트 게이지 강제 제거
+  document.querySelectorAll('.gmp-bar-wrap').forEach(b=>b.remove());
+  document.querySelectorAll('[id^="gmp_"]').forEach(e=>e.style.animation='');
+
   // 채집물 아래에 진행바 표시
   const el = document.getElementById(gmpId(pointId));
   if(el){
-    // hiddenIcon 포인트는 위치 고정 - pulse 애니메이션 적용 안 함
-    if(!pt.hiddenIcon) el.style.animation = 'gather-pulse .6s infinite alternate';
+    // noRegen 포인트는 위치 고정 - pulse 애니메이션 적용 안 함
+    if(!pt.noRegen) el.style.animation = 'gather-pulse .6s infinite alternate';
     // 기존 진행바 제거 후 새로 추가
     let bar = el.querySelector('.gmp-bar-wrap');
     if(!bar){
       bar = document.createElement('div');
       bar.className = 'gmp-bar-wrap';
-      bar.style.cssText = 'width:60px;height:6px;background:rgba(0,0,0,.5);border-radius:3px;margin-top:3px;overflow:hidden';
+      bar.style.cssText = 'width:90px;height:10px;background:rgba(0,0,0,.6);border-radius:5px;margin-top:5px;overflow:hidden;border:1px solid rgba(255,255,255,.2)';
       const inner = document.createElement('div');
       inner.className = 'gmp-bar-inner';
-      inner.style.cssText = 'height:100%;background:#2a8a3a;width:0%;transition:width .25s';
+      inner.style.cssText = 'height:100%;background:linear-gradient(90deg,#2a8a3a,#4aaf5a);width:0%;transition:width .25s';
       bar.appendChild(inner);
       el.appendChild(bar);
     }
@@ -5107,11 +5111,13 @@ function finishGatherPointExec(zoneId, pointId){
     renderSkillList();
     renderMats();
     saveGame();
-    // 300ms 후 같은 포인트 자동 재시작
+    // 300ms 후 같은 포인트 자동 재시작 - 다른 포인트 클릭했으면 중단
+    const thisPointId = pointId;
     setTimeout(()=>{
-      if(G.curGatherZone && document.getElementById('gathermap')?.style.display !== 'none'){
-        startGatherPointExec(G.curGatherZone.id, pointId);
-      }
+      if(!G.curGatherZone) return; // 채집터 나감
+      if(document.getElementById('gathermap')?.style.display === 'none') return; // 맵 닫힘
+      if(mapGatherPointId || _gatherPointId2) return; // 이미 다른 포인트 채집중
+      startGatherPointExec(G.curGatherZone.id, thisPointId);
     }, 300);
     return;
   } else {
@@ -5169,7 +5175,10 @@ function cancelGatherMap(){
     const bw = el.querySelector('.gmp-bar-wrap');
     if(bw) bw.remove();
   }
-  toast('채집을 취소했습니다.');
+  // noRegen 포인트면 상태를 ready로 복원 (다시 클릭 가능)
+  if(pid && G.gatherPointState[pid]){
+    G.gatherPointState[pid] = {status:'ready'};
+  }
 }
 
 function exitGatherMap(){
