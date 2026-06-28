@@ -3777,7 +3777,7 @@ function renderInv(){
         d.style.position='relative';
         d.appendChild(tag);
       }
-      d.onclick=(()=>{const idx=i;return(e)=>{e.stopPropagation();showItemPopup(idx,e);}})();
+      d.onclick=(()=>{const idx=i;return(e)=>{e.stopPropagation();showItemContextMenu(idx,e);}})();
       d.ondblclick=(()=>{const idx=i;return()=>dblClickEquip(idx);})();
       d.oncontextmenu=(()=>{const idx=i;return(e)=>{e.preventDefault();e.stopPropagation();showItemContextMenu(idx,e);}})();
     }
