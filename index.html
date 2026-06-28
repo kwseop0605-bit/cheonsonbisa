@@ -1014,7 +1014,9 @@ const CHAR_IMAGES = {
 };
 
 const GATHER_IMAGES = {
-  '쑥':   'images/gather/ssuk.png',
+  '쑥':     'images/gather/ssuk.png',
+  '돌광석': 'images/gather/stone.png',       // 들판 채집 맵 아이콘
+  '돌조각': 'images/gather/stone_chunk.png', // 재료창고 표시
   '소나무': 'images/gather/pine.png',
   '철광석': 'images/gather/iron_ore.png',
   '석탄':   'images/gather/coal.png',
@@ -1534,8 +1536,9 @@ const GATHER_ZONES = [
 
 const GATHER_POINTS = {
   meadow: [
-    {id:'gp_쑥',   name:'쑥',   icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
-    {id:'gp_감초', name:'감초', icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_쑥',    name:'쑥',    icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각'},
   ],
   forest: [
     {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
@@ -5021,7 +5024,8 @@ function finishGatherPointExec(zoneId, pointId){
     // 일반 채집물 획득 - 새 시스템: 숙련도(xp) 기반
     const curXp = (G.gatherSkills[pt.skill]||{xp:0}).xp || 0;
     const qty = pt.fixedQty ? 1 : getGatherQty(curXp, sk.lv, pt.skillLvMin);
-    G.mats[pt.name] = (G.mats[pt.name]||0) + qty;
+    const matName = pt.resultName || pt.name;
+    G.mats[matName] = (G.mats[matName]||0) + qty;
     // 채집 통계 수집
     if(!G.gatherStats) G.gatherStats={itemCount:{},totalGather:0,toolUse:{}};
     G.gatherStats.itemCount[pt.name] = (G.gatherStats.itemCount[pt.name]||0) + qty;
@@ -5033,7 +5037,7 @@ function finishGatherPointExec(zoneId, pointId){
       G.gatherStats.firstTime[pt.name] = true;
       addHistory(skillTypeKor, `${pt.name} 최초 ${skillTypeKor} 성공`);
     }
-    toast('✅ ' + pt.icon + ' ' + pt.name + ' ×' + qty + ' 획득!');
+    toast('✅ ' + pt.icon + ' ' + matName + ' ×' + qty + ' 획득!');
   }
 
   // 도구 내구도 소모 (toolName2를 여기서 선언)
