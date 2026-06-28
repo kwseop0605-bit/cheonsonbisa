@@ -1538,7 +1538,7 @@ const GATHER_POINTS = {
   meadow: [
     {id:'gp_쑥',    name:'쑥',    icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
     {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
-    {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각'},
+    {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
   ],
   forest: [
     {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
@@ -4776,7 +4776,7 @@ function renderGatherMapPoints(zoneId){
     const iconHtml = pt.hiddenIcon
       ? ``
       : hasImg
-        ? `<img src="${GATHER_IMAGES[pt.name]}" style="width:${imgSize};height:${imgSize};object-fit:contain;${(isLocked||lvLocked2)?'filter:grayscale(1) opacity(.4)':''}" draggable="false">`
+        ? `<img src="${GATHER_IMAGES[pt.name]}" style="${pt.iconH ? `height:${pt.iconH};width:auto` : `width:${imgSize};height:${imgSize}`};object-fit:contain;${(isLocked||lvLocked2)?'filter:grayscale(1) opacity(.4)':''}" draggable="false">`
         : `<div style="${iconStyle.replace('2.4rem', iconSize)}">${pt.icon}</div>`;
 
     // hiddenIcon 포인트는 투명 클릭 영역만 (이미지에 식물이 이미 그려져 있음)
