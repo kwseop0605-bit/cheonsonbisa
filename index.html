@@ -5119,11 +5119,19 @@ function finishGatherPointExec(zoneId, pointId){
     saveGame();
     // 300ms 후 같은 포인트 자동 재시작
     const thisPointId = pointId;
+    const thisZoneId = G.curGatherZone?.id;
     setTimeout(()=>{
       if(!G.curGatherZone) return;
       if(document.getElementById('gathermap')?.style.display === 'none') return;
       if(mapGatherPointId || _gatherPointId2) return; // 다른 포인트 채집 중이면 중단
-      startGatherPointExec(G.curGatherZone.id, thisPointId);
+      // 도구 체크만 하고 조용히 재시작 (alert 없이)
+      const pts2 = GATHER_POINTS[thisZoneId] || [];
+      const pt2 = pts2.find(p=>p.id===thisPointId);
+      if(!pt2) return;
+      const eqIdx2 = G.equippedTools?.[pt2.skill];
+      const inv2 = (eqIdx2!=null) ? G.inventory[eqIdx2] : null;
+      if(!inv2 || (inv2.dur||0)<=0) return; // 도구 없거나 파손 - 조용히 중단
+      startGatherPointExec(thisZoneId, thisPointId);
     }, 300);
     return;
   } else {
