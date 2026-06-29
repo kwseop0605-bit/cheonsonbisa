@@ -637,21 +637,16 @@ function runTutorialStep(){
     typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
       const nextBtn = document.getElementById('tutorial-next');
       nextBtn.classList.add('show');
-      // 다음 버튼 클릭 전에는 인벤토리 잠금 (다음 클릭 후에만 착용 가능)
-      const invLockOverlay = document.createElement('div');
-      invLockOverlay.id = 'tut-inv-lock';
-      invLockOverlay.style.cssText = 'position:fixed;inset:0;z-index:2000;pointer-events:none';
-      document.body.appendChild(invLockOverlay);
+
+      // 다음 버튼만 클릭 가능하게 잠금
+      setTutLock(nextBtn);
 
       nextBtn.onclick = ()=>{
+        clearTutLock();
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
         nextBtn.onclick = null;
-        const lock = document.getElementById('tut-inv-lock');
-        if(lock) lock.remove();
-        setTimeout(()=>{
-          showInvArrow();
-        }, 300);
+        setTimeout(()=>{ showInvArrow(); }, 300);
         tutWaiting = true;
         waitForEquipAll(()=>{
           tutWaiting = false;

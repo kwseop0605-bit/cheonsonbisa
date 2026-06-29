@@ -340,10 +340,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
       <div class="hud-gold">💰<span id="hud-gold">0냥</span></div>
     </div>
     <button class="hud-btn" onclick="showTab('settings')">⚙</button>
-    <!-- 진행 중 퀘스트 -->
-    <div id="hud-quest" onclick="showQuestDetail()" style="display:none;cursor:pointer;padding:.2rem .7rem;background:rgba(200,160,50,.15);border:1px solid rgba(200,160,50,.4);border-radius:4px;font-size:.72rem;color:var(--gold2);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-      <span id="hud-quest-text">📜 퀘스트</span>
-    </div>
   </div>
 
   <div id="main">
@@ -1873,7 +1869,7 @@ function startGame(){
   if(!G.ptsPending) G.ptsPending={mhp:0,mmp:0,atk:0,def:0,ev:0,pen:0,luck:0};
   if(!G.ptsUsed) G.ptsUsed=0;
   // fm-player-svg는 openFullMap에서 그림
-  updateHUD(); updateSide();
+  updateHUD(); updateSide(); updateQuestHUD();
   if(!G.craftSkills) G.craftSkills = {};
   if(!G.lifeSkills) G.lifeSkills = {};
   if(!G.vitalKills) G.vitalKills={};
@@ -1937,39 +1933,44 @@ function fmtGold(n){
   return `${n}냥`;
 }
 function updateQuestHUD(){
-  const el = document.getElementById('hud-quest');
-  const txt = document.getElementById('hud-quest-text');
-  if(!el || !txt) return;
-  if(G.tutorialDone){ el.style.display='none'; return; }
+  const panel = document.getElementById('quest-panel');
+  const titleEl = document.getElementById('quest-panel-title');
+  const textEl = document.getElementById('quest-panel-text');
+  if(!panel || !titleEl || !textEl) return;
+  if(G.tutorialDone){ panel.style.display='none'; return; }
 
-  // 현재 진행 중인 퀘스트 파악
   const mats = G.mats || {};
-  const ssukCnt = (mats['쑥']||0);
-  const logCnt = (mats['나뭇가지']||0);
-  const mineCnt = (mats['철광석']||0);
   const ls = G.lifeSkills || {};
+  const ssukCnt = mats['쑥']||0;
+  const logCnt = mats['나뭇가지']||0;
+  const mineCnt = mats['철광석']||0;
 
-  let title = '📜 천손 입문';
   let detail = '';
-
   if(!ls['gather']){
     detail = '신단수를 찾아가세요';
   } else if(ssukCnt < 10){
     detail = `쑥 채집 ${ssukCnt}/10`;
+  } else if(!G.craftSkills?.['tool_homi']){
+    detail = '돌호미 제작서를 사용하세요';
   } else if(!ls['logging']){
     detail = '신단수를 찾아가세요';
   } else if(logCnt < 10){
     detail = `나뭇가지 채집 ${logCnt}/10`;
+  } else if(!G.craftSkills?.['tool_axe']){
+    detail = '돌도끼 제작서를 사용하세요';
   } else if(!ls['mining']){
     detail = '신단수를 찾아가세요';
   } else if(mineCnt < 10){
     detail = `철광석 채집 ${mineCnt}/10`;
+  } else if(!G.craftSkills?.['tool_pickaxe']){
+    detail = '돌곡괭이 제작서를 사용하세요';
   } else {
     detail = '신단수를 찾아가세요';
   }
 
-  txt.textContent = `📜 ${title} - ${detail}`;
-  el.style.display = 'block';
+  titleEl.textContent = '천손 입문';
+  textEl.textContent = detail;
+  panel.style.display = 'block';
 }
 
 function showQuestDetail(){
@@ -7152,5 +7153,11 @@ setInterval(()=>{
 </div>
 <script src="gather.js"></script>
 <script src="tutorial.js"></script>
+<!-- 퀘스트 진행 패널 (우측 상단 고정) -->
+<div id="quest-panel" style="display:none;position:fixed;top:48px;right:12px;z-index:800;background:rgba(10,8,3,.92);border:1px solid rgba(200,160,50,.5);border-radius:6px;padding:.5rem .8rem;min-width:200px;max-width:260px;cursor:pointer" onclick="showQuestDetail()">
+  <div style="font-size:.65rem;color:#e8b84b;font-weight:700;margin-bottom:.3rem">📜 진행 중 퀘스트</div>
+  <div id="quest-panel-title" style="font-size:.75rem;color:var(--gold2);font-weight:700;margin-bottom:.2rem">천손 입문</div>
+  <div id="quest-panel-text" style="font-size:.72rem;color:var(--text2)">-</div>
+</div>
 </body>
 </html>
