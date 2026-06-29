@@ -1932,74 +1932,7 @@ function fmtGold(n){
   if(n>=100) return `${Math.floor(n/100)}관 ${n%100}냥`;
   return `${n}냥`;
 }
-function updateQuestHUD(){
-  const panel = document.getElementById('quest-panel');
-  const titleEl = document.getElementById('quest-panel-title');
-  const textEl = document.getElementById('quest-panel-text');
-  if(!panel || !titleEl || !textEl) return;
-  if(G.tutorialDone){ panel.style.display='none'; return; }
-
-  const mats = G.mats || {};
-  const ls = G.lifeSkills || {};
-  const ssukCnt = mats['쑥']||0;
-  const logCnt = mats['나뭇가지']||0;
-  const mineCnt = mats['철광석']||0;
-
-  let detail = '';
-  if(!ls['gather']){
-    detail = '신단수를 찾아가세요';
-  } else if(ssukCnt < 10){
-    detail = `쑥 채집 ${ssukCnt}/10`;
-  } else if(!G.craftSkills?.['tool_homi']){
-    detail = '돌호미 제작서를 사용하세요';
-  } else if(!ls['logging']){
-    detail = '신단수를 찾아가세요';
-  } else if(logCnt < 10){
-    detail = `나뭇가지 채집 ${logCnt}/10`;
-  } else if(!G.craftSkills?.['tool_axe']){
-    detail = '돌도끼 제작서를 사용하세요';
-  } else if(!ls['mining']){
-    detail = '신단수를 찾아가세요';
-  } else if(mineCnt < 10){
-    detail = `철광석 채집 ${mineCnt}/10`;
-  } else if(!G.craftSkills?.['tool_pickaxe']){
-    detail = '돌곡괭이 제작서를 사용하세요';
-  } else {
-    detail = '신단수를 찾아가세요';
-  }
-
-  titleEl.textContent = '천손 입문';
-  textEl.textContent = detail;
-  panel.style.display = 'block';
-}
-
-function showQuestDetail(){
-  const mats = G.mats || {};
-  const ls = G.lifeSkills || {};
-  const ssukCnt = mats['쑥']||0;
-  const logCnt = mats['나뭇가지']||0;
-  const mineCnt = mats['철광석']||0;
-
-  let steps = [
-    { done: ls['gather'], text: '채집 스킬 습득' },
-    { done: ssukCnt>=10, text: `쑥 10개 채집 (${Math.min(ssukCnt,10)}/10)` },
-    { done: G.craftSkills?.['tool_homi'], text: '돌호미 제작서 사용' },
-    { done: ls['logging'], text: '벌목 스킬 습득' },
-    { done: logCnt>=10, text: `나뭇가지 10개 채집 (${Math.min(logCnt,10)}/10)` },
-    { done: G.craftSkills?.['tool_axe'], text: '돌도끼 제작서 사용' },
-    { done: ls['mining'], text: '채광 스킬 습득' },
-    { done: mineCnt>=10, text: `철광석 10개 채집 (${Math.min(mineCnt,10)}/10)` },
-    { done: G.craftSkills?.['tool_pickaxe'], text: '돌곡괭이 제작서 사용' },
-  ];
-
-  const html = steps.map(s=>
-    `<div style="padding:.3rem 0;font-size:.78rem;color:${s.done?'#6abf4a':'var(--text)'}">
-      ${s.done?'✅':'⬜'} ${s.text}
-    </div>`
-  ).join('');
-
-  showLevelUpPopup('📜 천손 입문 퀘스트', html);
-}
+// updateQuestHUD, showQuestDetail → tutorial.js에서 처리
 
 function updateSide(){
   const c=G.char;
@@ -7135,14 +7068,14 @@ setInterval(()=>{
   <div id="tutorial-dim"></div>
   <div id="shindansu-light"></div>
 </div>
-<div id="forge-arrow">➤</div>
-<div id="forge-arrow-label">🔨 대장간을 클릭하세요!</div>
-<div id="inv-arrow">▲</div>
-<div id="inv-arrow-label">🎒 인벤토리 탭을 클릭하세요!</div>
-<div id="shindansu-arrow">▼</div>
-<div id="shindansu-arrow-label">🌳 신단수를 클릭하세요!</div>
-<div id="gather-arrow">▲</div>
-<div id="gather-arrow-label">🌿 채집터 탭을 클릭하세요! (쑥 5개 채집)</div>
+<div id="forge-arrow" style="display:none">➤</div>
+<div id="forge-arrow-label" style="display:none">🔨 대장간을 클릭하세요!</div>
+<div id="inv-arrow" style="display:none">▲</div>
+<div id="inv-arrow-label" style="display:none">🎒 인벤토리 탭을 클릭하세요!</div>
+<div id="shindansu-arrow" style="display:none">▼</div>
+<div id="shindansu-arrow-label" style="display:none">🌳 신단수를 클릭하세요!</div>
+<div id="gather-arrow" style="display:none">▲</div>
+<div id="gather-arrow-label" style="display:none">🌿 채집터 탭을 클릭하세요! (쑥 5개 채집)</div>
 <div id="tutorial-dialog">
   <div id="tutorial-speaker">신단수</div>
   <div id="tutorial-text"><span id="tutorial-text-inner"></span><span id="tutorial-cursor">▌</span></div>

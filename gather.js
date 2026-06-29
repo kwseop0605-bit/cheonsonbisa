@@ -236,7 +236,15 @@ function gatherFinish(zoneId, pointId){
         _gather.nextPointId = null;
         gatherStart(savedZoneId, nextId);
       } else if(!_gather.stopAfter){
-        // 대기열 없고 stopAfter 아니면 같은 포인트 반복
+        // 튜토리얼 중 쑥 10개 완료 시 자동재시작 중단
+        if(G && !G.tutorialDone){
+          const ssukDone = (G.mats['쑥']||0) >= 10;
+          const logDone = (G.mats['나뭇가지']||0) >= 10;
+          const mineDone = (G.mats['철광석']||0) >= 10;
+          if((savedZoneId==='field' && ssukDone) ||
+             (savedZoneId==='forest' && logDone) ||
+             (savedZoneId==='mine' && mineDone)) return;
+        }
         gatherStart(savedZoneId, savedPointId);
       }
     }, 300);
