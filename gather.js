@@ -208,6 +208,7 @@ function gatherFinish(zoneId, pointId){
   renderMats();
   renderSkillList();
   updateGatherSkillHUD && updateGatherSkillHUD();
+  updateQuestHUD && updateQuestHUD();
   saveGame();
 
   // ── noRegen 자동 재시작 ──

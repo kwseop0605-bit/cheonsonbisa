@@ -13,7 +13,7 @@ const TUTORIAL_STEPS = [
   {speaker:'불메장이', text:'이제 {name}님이 오셨군요. 어서 오십시오.'},
   {speaker:'불메장이', text:'천손으로 살아가시는 데 도움이 될\n\'호미\', \'도끼\', \'곡괭이\'를 드리겠습니다.', action:'give_tools'},
   {speaker:'불메장이', text:'채집, 벌목, 채광에 쓰이는 도구입니다.\n잘 간수하시길 바랍니다.'},
-  {speaker:'불메장이', text:'하단의 인벤토리 탭을 눌러보십시오.\n호미를 더블클릭하거나 우클릭하여 착용하시면 됩니다.', action:'highlight_inv_and_wait'},
+  {speaker:'불메장이', text:'하단의 인벤토리 탭을 눌러보십시오.\n호미를 클릭하여 장착 메뉴를 열고 착용하시면 됩니다.', action:'highlight_inv_and_wait'},
   {speaker:'불메장이', text:'허허, 잘 하셨습니다.\n나머지 곡괭이와 도끼도 같은 방법으로 착용하십시오.', action:'wait_equip_all'},
   {speaker:'불메장이', text:'모든 도구를 갖추셨군요. 이제 준비가 되셨습니다.\n신단수께 돌아가 다음 가르침을 받으십시오.', action:'close_and_highlight_shindansu'},
   // 신단수 복귀
@@ -637,13 +637,20 @@ function runTutorialStep(){
     typeText(step.text.replace('{name}', G.char.name||'천손'), ()=>{
       const nextBtn = document.getElementById('tutorial-next');
       nextBtn.classList.add('show');
+      // 다음 버튼 클릭 전에는 인벤토리 잠금 (다음 클릭 후에만 착용 가능)
+      const invLockOverlay = document.createElement('div');
+      invLockOverlay.id = 'tut-inv-lock';
+      invLockOverlay.style.cssText = 'position:fixed;inset:0;z-index:2000;pointer-events:none';
+      document.body.appendChild(invLockOverlay);
+
       nextBtn.onclick = ()=>{
         document.getElementById('tutorial-dialog').classList.remove('show');
         nextBtn.classList.remove('show');
-        nextBtn.onclick = null; // 착용 대기 중 완전 비활성화
+        nextBtn.onclick = null;
+        const lock = document.getElementById('tut-inv-lock');
+        if(lock) lock.remove();
         setTimeout(()=>{
           showInvArrow();
-          // 이미 인벤토리에 있으므로 잠금 없이 자유롭게
         }, 300);
         tutWaiting = true;
         waitForEquipAll(()=>{

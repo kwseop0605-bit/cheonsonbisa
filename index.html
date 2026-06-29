@@ -340,6 +340,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
       <div class="hud-gold">💰<span id="hud-gold">0냥</span></div>
     </div>
     <button class="hud-btn" onclick="showTab('settings')">⚙</button>
+    <!-- 진행 중 퀘스트 -->
+    <div id="hud-quest" onclick="showQuestDetail()" style="display:none;cursor:pointer;padding:.2rem .7rem;background:rgba(200,160,50,.15);border:1px solid rgba(200,160,50,.4);border-radius:4px;font-size:.72rem;color:var(--gold2);max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+      <span id="hud-quest-text">📜 퀘스트</span>
+    </div>
   </div>
 
   <div id="main">
@@ -925,9 +929,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
     <button id="gm-goto-battle-btn" onclick="gotoHuntFromGather()" style="display:none;padding:.3rem .8rem;background:rgba(80,20,20,.5);border:1px solid #8a3a2a;color:#ff8a6a;font-size:.78rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body)">⚔ 사냥터</button>
     <!-- 광산 층 이동 버튼 -->
     <div id="gm-mine-floors" style="display:none;gap:.3rem;align-items:center">
-      <button onclick="enterMineFloor(0)" id="gm-floor-1" style="padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body);background:rgba(80,50,10,.7);border:1px solid #c9922a;color:#e8b84b">1층</button>
-      <button onclick="enterMineFloor(1)" id="gm-floor-2" style="padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body);background:rgba(80,50,10,.7);border:1px solid #c9922a;color:#e8b84b">2층</button>
-      <button onclick="enterMineFloor(2)" id="gm-floor-3" style="padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body);background:rgba(80,50,10,.7);border:1px solid #c9922a;color:#e8b84b">3층</button>
+      <button onclick="event.stopPropagation();enterMineFloor(0)" id="gm-floor-1" style="padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body);background:rgba(80,50,10,.7);border:1px solid #c9922a;color:#e8b84b">1층</button>
+      <button onclick="event.stopPropagation();enterMineFloor(1)" id="gm-floor-2" style="padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body);background:rgba(80,50,10,.7);border:1px solid #c9922a;color:#e8b84b">2층</button>
+      <button onclick="event.stopPropagation();enterMineFloor(2)" id="gm-floor-3" style="padding:.3rem .6rem;font-size:.75rem;font-weight:600;cursor:pointer;border-radius:4px;font-family:var(--font-body);background:rgba(80,50,10,.7);border:1px solid #c9922a;color:#e8b84b">3층</button>
     </div>
     <span id="gm-title" style="font-family:var(--font-title);font-size:.9rem;color:var(--gold2)">채집터</span>
     <div style="display:flex;gap:.8rem;align-items:center">
@@ -1932,6 +1936,70 @@ function fmtGold(n){
   if(n>=100) return `${Math.floor(n/100)}관 ${n%100}냥`;
   return `${n}냥`;
 }
+function updateQuestHUD(){
+  const el = document.getElementById('hud-quest');
+  const txt = document.getElementById('hud-quest-text');
+  if(!el || !txt) return;
+  if(G.tutorialDone){ el.style.display='none'; return; }
+
+  // 현재 진행 중인 퀘스트 파악
+  const mats = G.mats || {};
+  const ssukCnt = (mats['쑥']||0);
+  const logCnt = (mats['나뭇가지']||0);
+  const mineCnt = (mats['철광석']||0);
+  const ls = G.lifeSkills || {};
+
+  let title = '📜 천손 입문';
+  let detail = '';
+
+  if(!ls['gather']){
+    detail = '신단수를 찾아가세요';
+  } else if(ssukCnt < 10){
+    detail = `쑥 채집 ${ssukCnt}/10`;
+  } else if(!ls['logging']){
+    detail = '신단수를 찾아가세요';
+  } else if(logCnt < 10){
+    detail = `나뭇가지 채집 ${logCnt}/10`;
+  } else if(!ls['mining']){
+    detail = '신단수를 찾아가세요';
+  } else if(mineCnt < 10){
+    detail = `철광석 채집 ${mineCnt}/10`;
+  } else {
+    detail = '신단수를 찾아가세요';
+  }
+
+  txt.textContent = `📜 ${title} - ${detail}`;
+  el.style.display = 'block';
+}
+
+function showQuestDetail(){
+  const mats = G.mats || {};
+  const ls = G.lifeSkills || {};
+  const ssukCnt = mats['쑥']||0;
+  const logCnt = mats['나뭇가지']||0;
+  const mineCnt = mats['철광석']||0;
+
+  let steps = [
+    { done: ls['gather'], text: '채집 스킬 습득' },
+    { done: ssukCnt>=10, text: `쑥 10개 채집 (${Math.min(ssukCnt,10)}/10)` },
+    { done: G.craftSkills?.['tool_homi'], text: '돌호미 제작서 사용' },
+    { done: ls['logging'], text: '벌목 스킬 습득' },
+    { done: logCnt>=10, text: `나뭇가지 10개 채집 (${Math.min(logCnt,10)}/10)` },
+    { done: G.craftSkills?.['tool_axe'], text: '돌도끼 제작서 사용' },
+    { done: ls['mining'], text: '채광 스킬 습득' },
+    { done: mineCnt>=10, text: `철광석 10개 채집 (${Math.min(mineCnt,10)}/10)` },
+    { done: G.craftSkills?.['tool_pickaxe'], text: '돌곡괭이 제작서 사용' },
+  ];
+
+  const html = steps.map(s=>
+    `<div style="padding:.3rem 0;font-size:.78rem;color:${s.done?'#6abf4a':'var(--text)'}">
+      ${s.done?'✅':'⬜'} ${s.text}
+    </div>`
+  ).join('');
+
+  showLevelUpPopup('📜 천손 입문 퀘스트', html);
+}
+
 function updateSide(){
   const c=G.char;
   document.getElementById('side-name').textContent=c.name||'-';
@@ -1947,6 +2015,7 @@ function updateSide(){
   document.getElementById('s-weapon').textContent=G.equipped.weapon||'없음';
   document.getElementById('s-armor').textContent=G.equipped.armor||'없음';
   document.getElementById('s-accessory').textContent=G.equipped.accessory||'없음';
+  updateQuestHUD();
 }
 
 // 장착 스탯 합산
@@ -4600,6 +4669,7 @@ function openGatherMap(zone, startPointId){
   const mineFloorBtns = document.getElementById('gm-mine-floors');
   if(mineFloorBtns){
     if(zone.id === 'mine'){
+      if(!G.mineFloor) G.mineFloor = 1; // 기본 1층
       mineFloorBtns.style.display = 'flex';
       // 현재 층 버튼 활성화 표시
       [1,2,3].forEach(f=>{
@@ -4772,7 +4842,11 @@ function renderGatherMapPoints(zoneId){
 
     const el = document.createElement('div');
     el.id = gmpId(pt.id);
-    el.style.cssText = `position:absolute;left:${pt.pos.x}%;top:${pt.pos.y}%;transform:translate(-50%,-50%);display:${isRegen?'none':'flex'};flex-direction:column;align-items:center;gap:2px;cursor:${(isLocked||lvLocked2)?'not-allowed':'pointer'};z-index:10`;
+
+    // 스킬 없거나 레벨 조건 안 맞으면 완전히 숨김
+    if(isLocked || lvLocked2){ el.style.display='none'; container.appendChild(el); return; }
+
+    el.style.cssText = `position:absolute;left:${pt.pos.x}%;top:${pt.pos.y}%;transform:translate(-50%,-50%);display:${isRegen?'none':'flex'};flex-direction:column;align-items:center;gap:2px;cursor:pointer;z-index:10`;
 
     const iconStyle = (isLocked || lvLocked2)
       ? 'font-size:2.4rem;filter:grayscale(1) opacity(.4) drop-shadow(0 3px 10px rgba(0,0,0,.9))'
