@@ -679,23 +679,17 @@ function runTutorialStep(){
     saveGame();
     toast('⛏ 채광 스킬을 습득했습니다!');
   } else if(step.action === 'give_homi_recipe'){
-    if(!G.craftSkills) G.craftSkills = {};
-    G.craftSkills['tool'] = true;
-    G.craftSkills['tool_homi'] = true;
+    addToInventory({name:'돌호미 제작서', icon:'📖', type:'recipe', recipeId:'tool_homi', desc:'돌호미 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
     saveGame();
-    toast('📖 돌호미 제작서를 획득했습니다! (대장간 → 제작)');
+    toast('📖 돌호미 제작서를 받았습니다! 인벤토리에서 사용하세요.');
   } else if(step.action === 'give_axe_recipe'){
-    if(!G.craftSkills) G.craftSkills = {};
-    G.craftSkills['tool'] = true;
-    G.craftSkills['tool_axe'] = true;
+    addToInventory({name:'돌도끼 제작서', icon:'📖', type:'recipe', recipeId:'tool_axe', desc:'돌도끼 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
     saveGame();
-    toast('📖 돌도끼 제작서를 획득했습니다! (대장간 → 제작)');
+    toast('📖 돌도끼 제작서를 받았습니다! 인벤토리에서 사용하세요.');
   } else if(step.action === 'give_pickaxe_recipe'){
-    if(!G.craftSkills) G.craftSkills = {};
-    G.craftSkills['tool'] = true;
-    G.craftSkills['tool_pickaxe'] = true;
+    addToInventory({name:'돌곡괭이 제작서', icon:'📖', type:'recipe', recipeId:'tool_pickaxe', desc:'돌곡괭이 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
     saveGame();
-    toast('📖 돌곡괭이 제작서를 획득했습니다! (대장간 → 제작)');
+    toast('📖 돌곡괭이 제작서를 받았습니다! 인벤토리에서 사용하세요.');
   } else if(step.action === 'highlight_shindansu'){
     highlightVillageBuilding('shindansu');
   } else if(step.action === 'quest_gather_ssuk'){
@@ -725,10 +719,24 @@ function runTutorialStep(){
             tutWaiting = false;
             hideGatherArrow();
             playGatherCompleteSound();
-            toast('✨ 쑥 10개 채집 완료! 신단수로 돌아가세요.');
-            setTimeout(()=>{ showTab('village'); showShindansuArrow(); highlightVillageBuilding('shindansu');
-              const sdBtn2 = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'shindansu'"));
-              if(sdBtn2) setTutLock(sdBtn2); tutStep++; }, 800);
+            toast('✨ 쑥 10개 채집 완료! 채집터에서 나가 신단수를 찾아가세요.');
+            setTimeout(()=>{
+              // 채집터 나가기 버튼 안내
+              const backBtn = document.querySelector('#gathermap .back-btn');
+              if(backBtn) setTutLock(backBtn);
+              // 나가기 클릭 후 마을로 가면 신단수 화살표 표시
+              const origExit = window.exitGatherMap;
+              window.exitGatherMap = function(){
+                origExit();
+                window.exitGatherMap = origExit;
+                showTab('village');
+                showShindansuArrow();
+                highlightVillageBuilding('shindansu');
+                const sdBtn2 = Array.from(document.querySelectorAll('.village-btn')).find(b=>b.getAttribute('onclick')?.includes("'shindansu'"));
+                if(sdBtn2) setTutLock(sdBtn2);
+                tutStep++;
+              };
+            }, 800);
           }
         }, 1000);
       };
