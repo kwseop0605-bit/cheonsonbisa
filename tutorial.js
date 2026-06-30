@@ -809,7 +809,7 @@ function quitGame(){
   if(window.battleTimer) clearInterval(window.battleTimer);
   if(window.autoGatherTimer) clearInterval(window.autoGatherTimer);
   autoBattle = false;
-  document.getElementById('game').classList.remove('show');
+  document.getElementById('game-scale-wrap').classList.remove('show');
   toast('게임을 저장하고 종료했습니다.');
   setTimeout(()=>initGame(), 800);
 }

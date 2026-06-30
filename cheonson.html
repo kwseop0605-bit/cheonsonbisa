@@ -52,9 +52,10 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 .create-option-name{font-weight:600}
 .create-option-desc{font-size:.68rem;color:var(--text3);margin-top:.2rem}
 
-/* 메인 게임 */
-#game{display:none;flex-direction:column;height:100vh;width:100vw}
-#game.show{display:flex}
+/* 메인 게임 - 고정 해상도(1920x1080) 무대를 만들고 #game-scale-wrap이 화면 크기에 맞춰 통째로 확대/축소 */
+#game-scale-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;display:none;background:#000}
+#game-scale-wrap.show{display:block}
+#game{display:flex;flex-direction:column;width:1920px;height:1080px;position:absolute;top:0;left:0;transform-origin:top left}
 
 /* HUD */
 #hud{flex-shrink:0;background:linear-gradient(180deg,#050810,#0a0e1a);border-bottom:1px solid var(--border);padding:.4rem .8rem;display:flex;align-items:center;gap:.8rem;position:relative}
@@ -309,6 +310,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 </div>
 
 <!-- 메인 게임 -->
+<div id="game-scale-wrap">
 <div id="game">
   <div id="hud">
     <div class="hud-title">天孫秘史</div>
@@ -535,46 +537,49 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
       <div class="content-area" id="tab-village" style="padding:0;overflow:hidden;position:relative">
 
         <!-- 마을 배경 화면 -->
-        <div id="village-map" style="position:relative;width:100%;height:100%;overflow:hidden">
-          <img src="images/bg/village.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" draggable="false">
+        <div id="village-map" style="position:relative;width:100%;height:100%;overflow:hidden;background:#000">
+          <!-- 비율 고정 무대: 마을 배경 이미지 원본 비율을 유지하며 화면에 레터박스로 표시 -->
+          <div id="village-stage" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
+            <img id="village-bg-img" src="images/bg/village.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center;display:block" draggable="false" onload="fitVillageStage()">
 
-          <!-- 건물 클릭 영역 (이미지 비율 기준 % 좌표) -->
+            <!-- 건물 클릭 영역 (무대 비율 기준 % 좌표) -->
 
-          <!-- 대장간 (좌상단) -->
-          <div class="village-btn" style="left:4%;top:28%;width:20%;height:30%" onclick="openBuildingPanel('forge')" title="대장간">
-            <div class="village-btn-label">🔨 대장간</div>
+            <!-- 대장간 (좌상단) -->
+            <div class="village-btn" style="left:4%;top:28%;width:20%;height:30%" onclick="openBuildingPanel('forge')" title="대장간">
+              <div class="village-btn-label">🔨 대장간</div>
+            </div>
+
+            <!-- 약초방 (좌중앙) -->
+            <div class="village-btn" style="left:24%;top:60%;width:20%;height:28%" onclick="openBuildingPanel('herb')" title="약초방">
+              <div class="village-btn-label">약초방</div>
+            </div>
+
+            <!-- 신단수 (중앙 상단) -->
+            <div class="village-btn" style="left:33%;top:-5%;width:16%;height:47%" onclick="openBuildingPanel('shindansu')" title="신단수">
+              <div class="village-btn-label">🌳 신단수</div>
+            </div>
+
+            <!-- 무녀당 (중앙 우측) -->
+            <div class="village-btn" style="left:55%;top:22%;width:16%;height:22%" onclick="openBuildingPanel('mudang')" title="무녀당">
+              <div class="village-btn-label">🔮 무녀당</div>
+            </div>
+
+            <!-- 주막 (중앙 하단) -->
+            <div class="village-btn" style="left:50%;top:53%;width:18%;height:30%" onclick="openBuildingPanel('joomak')" title="주막">
+              <div class="village-btn-label">🍶 주막</div>
+            </div>
+
+            <!-- 무도관 (우중앙) -->
+            <div class="village-btn" style="left:78%;top:50%;width:20%;height:30%" onclick="openBuildingPanel('mudogwan')" title="무도관">
+              <div class="village-btn-label">🥋 무도관</div>
+            </div>
+
+            <!-- 마구간 (우상단) -->
+            <div class="village-btn" style="left:74%;top:28%;width:22%;height:24%" onclick="openBuildingPanel('magukan')" title="마구간">
+              <div class="village-btn-label">🐴 마구간</div>
+            </div>
+
           </div>
-
-          <!-- 약초방 (좌중앙) -->
-          <div class="village-btn" style="left:24%;top:60%;width:20%;height:28%" onclick="openBuildingPanel('herb')" title="약초방">
-            <div class="village-btn-label">약초방</div>
-          </div>
-
-          <!-- 신단수 (중앙 상단) -->
-          <div class="village-btn" style="left:33%;top:-5%;width:16%;height:47%" onclick="openBuildingPanel('shindansu')" title="신단수">
-            <div class="village-btn-label">🌳 신단수</div>
-          </div>
-
-          <!-- 무녀당 (중앙 우측) -->
-          <div class="village-btn" style="left:55%;top:22%;width:16%;height:22%" onclick="openBuildingPanel('mudang')" title="무녀당">
-            <div class="village-btn-label">🔮 무녀당</div>
-          </div>
-
-          <!-- 주막 (중앙 하단) -->
-          <div class="village-btn" style="left:50%;top:53%;width:18%;height:30%" onclick="openBuildingPanel('joomak')" title="주막">
-            <div class="village-btn-label">🍶 주막</div>
-          </div>
-
-          <!-- 무도관 (우중앙) -->
-          <div class="village-btn" style="left:78%;top:50%;width:20%;height:30%" onclick="openBuildingPanel('mudogwan')" title="무도관">
-            <div class="village-btn-label">🥋 무도관</div>
-          </div>
-
-          <!-- 마구간 (우상단) -->
-          <div class="village-btn" style="left:74%;top:28%;width:22%;height:24%" onclick="openBuildingPanel('magukan')" title="마구간">
-            <div class="village-btn-label">🐴 마구간</div>
-          </div>
-
         </div>
 
         <!-- 건물 내부 패널 (오버레이) -->
@@ -809,7 +814,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
     <button class="tab-btn" onclick="showTab('build')"><span class="tab-icon">🏗️</span>건물</button>
     <button class="tab-btn" onclick="showTab('quest')"><span class="tab-icon">📜</span>천명</button>
   </div>
-</div>
+  <!-- game div는 quest-panel 뒤에서 닫힘 (스케일 무대 통합) -->
 
 <div id="toast"></div>
 
@@ -1540,21 +1545,21 @@ const GATHER_ZONES = [
 
 const GATHER_POINTS = {
   meadow: [
-    {id:'gp_쑥',    name:'쑥',    icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
-    {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_쑥',    name:'쑥',    icon:'🌱', skill:'gather', time:5, pos:{x:15.5,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:28,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
     {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
   ],
   forest: [
     {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
-    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true},
+    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true, iconH:'190px'},
   ],
   mountain: [
     {id:'gm_약초',  name:'약초',  icon:'🌿', skill:'gather', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
     {id:'gm_더덕',  name:'더덕',  icon:'🌱', skill:'gather', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true},
   ],
   mine: [
-    {id:'mn_철광석', name:'철광석', icon:'⚙️', skill:'mining', time:5, pos:{x:30,y:50}, skillLvMin:1, noRegen:true},
-    {id:'mn_석탄',   name:'석탄',   icon:'🖤', skill:'mining', time:5, pos:{x:55,y:45}, skillLvMin:1, noRegen:true},
+    {id:'mn_철광석', name:'철광석', icon:'⚙️', skill:'mining', time:5, pos:{x:30,y:50}, skillLvMin:1, noRegen:true, iconH:'190px'},
+    {id:'mn_석탄',   name:'석탄',   icon:'🖤', skill:'mining', time:5, pos:{x:55,y:45}, skillLvMin:1, noRegen:true, iconH:'190px'},
   ],
 };
 
@@ -1829,7 +1834,8 @@ function startGame(){
   if(typeof ZONE_BG !== 'undefined' && ZONE_BG.gather_select){
     document.documentElement.style.setProperty('--gather-select-bg', `url('${ZONE_BG.gather_select}')`);
   }
-  document.getElementById('game').classList.add('show');
+  document.getElementById('game-scale-wrap').classList.add('show');
+  fitScaleWrap();
   // 항상 zone 선택 화면부터 시작
   document.getElementById('view-zone').style.display='block';
   document.getElementById('view-mtype').style.display='none';
@@ -1841,6 +1847,8 @@ function startGame(){
   document.getElementById('tab-village').classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.tab-btn')[5]?.classList.add('active');
+  fitVillageStage();
+  setTimeout(fitVillageStage, 50); // 레이아웃 확정 후 1회 더 보정
   // 캐릭터 SVG
   // 캐릭터 이미지 (사이드바 = normal)
   const charSvg = document.getElementById('char-svg');
@@ -4599,17 +4607,40 @@ function renderGatherItemList(zone){
 
 // 채집맵 배경 이미지 원본 비율을 유지하며 화면에 레터박스로 맞춤
 // (배경 이미지마다 비율이 달라도 자동 대응되도록 naturalWidth/Height 사용)
-function fitGmStage(){
-  const stage = document.getElementById('gm-stage');
-  const gm = document.getElementById('gathermap');
-  const bgImg = document.getElementById('gmap-bg-img');
-  if(!stage || !gm) return;
+// 게임 전체(#game, 1920x1080 고정 디자인)를 실제 창 크기에 맞춰
+// 가로세로 비율을 그대로 유지하며 통째로 확대/축소(레터박스 중앙 정렬)
+function fitScaleWrap(){
+  const wrap = document.getElementById('game-scale-wrap');
+  const game = document.getElementById('game');
+  if(!wrap || !game) return;
+  const DESIGN_W = 1920, DESIGN_H = 1080;
+  const ww = wrap.clientWidth, wh = wrap.clientHeight;
+  if(ww <= 0 || wh <= 0) return;
+  const scale = Math.min(ww / DESIGN_W, wh / DESIGN_H);
+  const offsetX = (ww - DESIGN_W * scale) / 2;
+  const offsetY = (wh - DESIGN_H * scale) / 2;
+  game.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+  // 채집맵/마을 무대도 비율이 바뀌었으니 재계산
+  if(document.getElementById('gathermap')?.style.display !== 'none') fitGmStage();
+  if(document.getElementById('tab-village')?.classList.contains('active')) fitVillageStage();
+}
+window.addEventListener('resize', fitScaleWrap);
 
-  const screenW = gm.clientWidth;
-  const screenH = gm.clientHeight;
-  let ratio = 1408/768; // 기본값(이미지 로드 전 폴백)
-  if(bgImg && bgImg.naturalWidth && bgImg.naturalHeight){
-    ratio = bgImg.naturalWidth / bgImg.naturalHeight;
+
+// stageId: 무대 div id, containerId: 화면 전체 컨테이너 id, imgId: 비율 기준이 될 img id
+function fitStage(stageId, containerId, imgId, fallbackRatio){
+  const stage = document.getElementById(stageId);
+  const container = document.getElementById(containerId);
+  const img = document.getElementById(imgId);
+  if(!stage || !container) return;
+
+  const screenW = container.clientWidth;
+  const screenH = container.clientHeight;
+  if(screenW <= 0 || screenH <= 0) return;
+
+  let ratio = fallbackRatio || 1408/768;
+  if(img && img.naturalWidth && img.naturalHeight){
+    ratio = img.naturalWidth / img.naturalHeight;
   }
 
   const screenRatio = screenW / screenH;
@@ -4626,9 +4657,15 @@ function fitGmStage(){
   stage.style.width = w + 'px';
   stage.style.height = h + 'px';
 }
-window.addEventListener('resize', ()=>{
-  if(document.getElementById('gathermap')?.style.display !== 'none') fitGmStage();
-});
+
+function fitGmStage(){
+  fitStage('gm-stage', 'gathermap', 'gmap-bg-img');
+}
+
+function fitVillageStage(){
+  fitStage('village-stage', 'village-map', 'village-bg-img');
+}
+// resize 시 fitGmStage/fitVillageStage 호출은 fitScaleWrap() 안에서 함께 처리됨
 
 function openGatherMap(zone, startPointId){
   // 마지막 채집터 기록
@@ -6795,7 +6832,7 @@ function showTab(id){
   }
   if(id==='gather') renderGatherZoneList();
   if(id==='build') renderBuildings();
-  if(id==='village') renderVillage();
+  if(id==='village'){ renderVillage(); fitVillageStage(); }
   if(id==='skill'){ renderSkillList(); renderToolShop(); }
   if(id==='char') renderChar();
   if(id==='inv') renderInv();
@@ -7133,5 +7170,7 @@ setInterval(()=>{
   <div id="quest-panel-title" style="font-size:.75rem;color:var(--gold2);font-weight:700;margin-bottom:.2rem">천손 입문</div>
   <div id="quest-panel-text" style="font-size:.72rem;color:var(--text2)">-</div>
 </div>
+</div><!-- /#game -->
+</div><!-- /#game-scale-wrap -->
 </body>
 </html>
