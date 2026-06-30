@@ -901,9 +901,14 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 </div>
 
 <!-- 전체화면 채집터 맵 -->
-<div id="gathermap" style="display:none;position:fixed;inset:0;z-index:500;overflow:hidden" onclick="_gather.stopAfter=true;">
-  <canvas id="gmap-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-  <img id="gmap-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
+<div id="gathermap" style="display:none;position:fixed;inset:0;z-index:500;overflow:hidden;background:#000" onclick="_gather.stopAfter=true;">
+  <!-- 비율 고정 무대: 배경 이미지 원본 비율을 항상 유지하며 화면에 레터박스로 표시 (크기는 JS의 fitGmStage()가 계산) -->
+  <div id="gm-stage" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
+    <canvas id="gmap-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
+    <img id="gmap-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
+    <!-- 채집 포인트 컨테이너 (무대 기준 %) -->
+    <div id="gm-points" style="position:absolute;inset:0"></div>
+  </div>
 
   <!-- 채집터 내 인벤토리 오버레이 -->
   <div id="gather-inv-overlay" style="display:none;position:absolute;top:0;right:0;bottom:0;width:320px;max-width:90vw;background:rgba(10,7,3,.97);border-left:2px solid var(--border2);z-index:600;overflow-y:auto;padding:.8rem" onclick="event.stopPropagation()">
@@ -971,8 +976,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
       </div>
     </div>
   </div>
-  <!-- 채집 포인트 컨테이너 -->
-  <div id="gm-points" style="position:absolute;inset:0"></div>
+  <!-- gm-points는 #gm-stage 안으로 이동됨 -->
   <!-- 채집 진행 팝업 -->
   <div id="gm-popup" style="display:none;position:absolute;bottom:60px;left:50%;transform:translateX(-50%);background:rgba(10,30,10,.92);border:1px solid #2a8a3a;border-radius:8px;padding:.6rem 1.2rem;min-width:200px;text-align:center;z-index:600" onclick="event.stopPropagation()">
     <div id="gm-popup-name" style="font-size:.85rem;color:#6abf4a;font-weight:600;margin-bottom:.4rem"></div>
@@ -4593,6 +4597,39 @@ function renderGatherItemList(zone){
   });
 }
 
+// 채집맵 배경 이미지 원본 비율을 유지하며 화면에 레터박스로 맞춤
+// (배경 이미지마다 비율이 달라도 자동 대응되도록 naturalWidth/Height 사용)
+function fitGmStage(){
+  const stage = document.getElementById('gm-stage');
+  const gm = document.getElementById('gathermap');
+  const bgImg = document.getElementById('gmap-bg-img');
+  if(!stage || !gm) return;
+
+  const screenW = gm.clientWidth;
+  const screenH = gm.clientHeight;
+  let ratio = 1408/768; // 기본값(이미지 로드 전 폴백)
+  if(bgImg && bgImg.naturalWidth && bgImg.naturalHeight){
+    ratio = bgImg.naturalWidth / bgImg.naturalHeight;
+  }
+
+  const screenRatio = screenW / screenH;
+  let w, h;
+  if(screenRatio > ratio){
+    // 화면이 이미지보다 가로로 더 김 → 세로(높이) 기준으로 맞춤
+    h = screenH;
+    w = h * ratio;
+  } else {
+    // 화면이 이미지보다 세로로 더 김 → 가로(너비) 기준으로 맞춤
+    w = screenW;
+    h = w / ratio;
+  }
+  stage.style.width = w + 'px';
+  stage.style.height = h + 'px';
+}
+window.addEventListener('resize', ()=>{
+  if(document.getElementById('gathermap')?.style.display !== 'none') fitGmStage();
+});
+
 function openGatherMap(zone, startPointId){
   // 마지막 채집터 기록
   G.lastGatherZone = zone;
@@ -4632,7 +4669,9 @@ function openGatherMap(zone, startPointId){
   const bgImg = document.getElementById('gmap-bg-img');
   const canvas = document.getElementById('gmap-canvas');
   if(typeof ZONE_BG !== 'undefined' && ZONE_BG[zone.bg]){
+    bgImg.onload = () => fitGmStage();
     bgImg.src = ZONE_BG[zone.bg]; bgImg.style.display = 'block'; canvas.style.display = 'none';
+    fitGmStage(); // 캐시된 이미지면 onload가 안 불릴 수 있으니 즉시 1회 호출(완료 시 자연치수 기준)
     // 광산이면 3층 구분선 오버레이 추가
     if(zone.bg === 'mine'){
       bgImg.style.display = 'block';
@@ -4640,7 +4679,9 @@ function openGatherMap(zone, startPointId){
       canvas.style.position = 'absolute';
       canvas.style.top = '0'; canvas.style.left = '0';
       canvas.style.pointerEvents = 'none';
-      const W = window.innerWidth, H = window.innerHeight;
+      const stageEl = document.getElementById('gm-stage');
+      const W = stageEl ? stageEl.clientWidth : window.innerWidth;
+      const H = stageEl ? stageEl.clientHeight : window.innerHeight;
       canvas.width = W; canvas.height = H;
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0,0,W,H);
