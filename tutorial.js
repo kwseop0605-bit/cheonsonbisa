@@ -227,15 +227,17 @@ function runTutorialStep(){
     });
 
   } else if(step.action === 'give_tools'){
-    if(!G.inventory.some(i=>i&&i.name==='호미'))
+    // 최초 1회만 지급 (파손 후 재진입해도 다시 주지 않음)
+    if(!G.givenStartTools){
+      G.givenStartTools = true;
       addToInventory({name:'호미', icon:'images/tools/homi.png', type:'tool', skill:'gather', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-    if(!G.inventory.some(i=>i&&i.name==='곡괭이'))
       addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-    if(!G.inventory.some(i=>i&&i.name==='도끼'))
       addToInventory({name:'도끼', icon:'images/tools/axe.png', type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-    renderInv && renderInv();
-    playGiveToolsSound();
-    toast('🎁 호미, 곡괭이, 도끼를 받았습니다!');
+      renderInv && renderInv();
+      playGiveToolsSound();
+      toast('🎁 호미, 곡괭이, 도끼를 받았습니다!');
+      saveGame();
+    }
     showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
 
   } else if(step.action === 'wait_equip_homi'){

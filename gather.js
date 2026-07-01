@@ -289,10 +289,6 @@ function gatherFinish(zoneId, pointId){
 // ── 스페이스/클릭으로 채집 단축 ───────────────────────────────────────
 function gatherBoost(){
   if(!_gather.timer) return;
-  const now = Date.now();
-  if(now - _gather.clickWindowStart > 1000){ _gather.clickCount=0; _gather.clickWindowStart=now; }
-  if(_gather.clickCount >= 2) return;
-  _gather.clickCount++;
   _gather.remaining = Math.max(0, _gather.remaining - 500);
   const pct = 100 - (_gather.remaining / _gather.total * 100);
   const ptEl = document.getElementById(gmpId(_gather.pointId));
@@ -307,6 +303,12 @@ function gatherBoost(){
 function startGatherPointExec(zoneId, pointId){ gatherStart(zoneId, pointId); }
 function cancelGatherMap(){ gatherStop(); }
 function exitGatherMap(){
+  // 채집 중이면 완료 후 나가기
+  if(_gather.timer){
+    _gather.stopAfter = true;
+    toast('채집 완료 후 나갑니다...');
+    return;
+  }
   gatherStop();
   document.getElementById('gathermap').style.display = 'none';
   const ov = document.getElementById('gather-inv-overlay');

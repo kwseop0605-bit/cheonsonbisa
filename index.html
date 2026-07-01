@@ -1521,6 +1521,7 @@ const G = {
   tools: {},
   bagSize: 30, // 가방 최대 칸수 (6칸씩 확장)
   tutorialDone: false,
+  givenStartTools: false,
   tutorialStep: 0,     // 튜토리얼 진행 단계 저장
   history: [],
 };
@@ -1553,7 +1554,7 @@ const GATHER_POINTS = {
   ],
   forest: [
     {id:'gf_나뭇가지', name:'잡목', icon:'🪵', skill:'logging', time:5, pos:{x:15,y:70}, skillLvMin:1, noRegen:true, resultName:'나뭇가지', iconH:'190px'},
-    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:75,y:65}, skillLvMin:1, noRegen:true, iconH:'190px'},
+    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:55,y:68}, skillLvMin:1, noRegen:true, iconH:'190px'},
   ],
   mountain: [
     {id:'gm_약초',  name:'약초',  icon:'🌿', skill:'gather', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
@@ -5372,9 +5373,9 @@ document.addEventListener('keydown', (e)=>{
     if(document.activeElement && document.activeElement.tagName === 'BUTTON'){
       document.activeElement.blur();
     }
-    if(mapGatherTimer && _gatherPointId2){
-      e.preventDefault();
-      clickGatherBoost();
+    const gm = document.getElementById('gathermap');
+    if(gm && gm.style.display !== 'none'){
+      e.preventDefault(); // 스페이스로 페이지 스크롤 방지
     }
   }
   // 숫자키 1: HP 슬롯 열매, 숫자키 2: MP 슬롯 열매
@@ -5385,6 +5386,16 @@ document.addEventListener('keydown', (e)=>{
   if(e.code === 'Digit2' && !e.ctrlKey && !e.altKey){
     const name = G.berrySlots?.[1];
     if(name){ e.preventDefault(); useBerry(name); renderBerrySlots(); }
+  }
+});
+
+// 스페이스 키업 - 채집 시간 0.5초 단축 (뗄 때 한 번만)
+document.addEventListener('keyup', function(e){
+  if(e.code === 'Space'){
+    const gm = document.getElementById('gathermap');
+    if(gm && gm.style.display !== 'none' && typeof gatherBoost === 'function'){
+      gatherBoost();
+    }
   }
 });
 
