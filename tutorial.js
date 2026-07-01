@@ -503,18 +503,18 @@ function runTutorialStep(){
     showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
 
   } else if(step.action === 'end_tutorial'){
+    // 즉시 tutorialDone 저장 (딜레이 전에 먼저)
+    G.tutorialDone = true;
+    G.tutorialStep = 0;
+    localStorage.setItem('cheonson_tutorial_done', 'true');
+    saveGame();
     showDialog(step, ()=>{
-      // 3초 후 튜토리얼 종료
       setTimeout(()=>{
-        G.tutorialDone = true;
-        G.tutorialStep = 0;
         giveToolRecipes();
-        localStorage.setItem('cheonson_tutorial_done', 'true');
-        saveGame();
         playTutorialCompleteSound();
         endTutorial();
-        updateQuestHUD();
-      }, 3000);
+        if(typeof updateQuestHUD === 'function') updateQuestHUD();
+      }, 1000);
     });
 
   } else {

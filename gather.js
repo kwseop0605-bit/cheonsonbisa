@@ -144,6 +144,9 @@ function gatherFinish(zoneId, pointId){
   const pt = pts.find(p => p.id === pointId);
   if(!pt) return;
 
+  // 나가기 예약 체크 - 아이템 획득 후 나가기
+  const _exitAfter = _gather.stopAfter;
+
   const sk = G.gatherSkills[pt.skill] || {lv:1, xp:0};
 
   // ── 아이템 획득 ──
@@ -246,6 +249,10 @@ function gatherFinish(zoneId, pointId){
              (savedZoneId==='mine' && mineDone)) return;
         }
         gatherStart(savedZoneId, savedPointId);
+      } else {
+        // stopAfter true → 채집 완료 후 자동 나가기
+        _gather.stopAfter = false;
+        setTimeout(()=>{ if(typeof exitGatherMap === 'function') exitGatherMap(); }, 200);
       }
     }, 300);
   } else {
@@ -258,6 +265,12 @@ function gatherFinish(zoneId, pointId){
     if(el){ el.style.display='none'; el.style.animation=''; const bw=el.querySelector('.gmp-bar-wrap'); if(bw) bw.remove(); }
     if(G.curGatherZone) renderGatherItemList(G.curGatherZone);
 
+    // 나가기 예약이면 리젠 기다리지 않고 바로 나가기
+    if(_exitAfter){
+      _gather.stopAfter = false;
+      setTimeout(()=>{ if(typeof exitGatherMap === 'function') exitGatherMap(); }, 200);
+      return;
+    }
     const _regenRefresh = setInterval(()=>{
       const st = G.gatherPointState[pointId];
       if(!st || st.status!=='regen' || Date.now() >= st.endTime){

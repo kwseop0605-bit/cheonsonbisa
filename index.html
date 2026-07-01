@@ -1010,7 +1010,7 @@ const ZONE_BG = {
   gather_select: 'images/bg/gather_select.jpg',
 
   field: "images/bg/field.jpg",
-  // forest: "data:image/jpeg;base64,...",
+  forest: "images/bg/forest.jpg",
   // deep: "data:image/jpeg;base64,...",
   mine: 'images/bg/mine.jpg',};
 
@@ -1026,6 +1026,8 @@ const GATHER_IMAGES = {
   '쑥':     'images/gather/ssuk.png',
   '돌광석': 'images/gather/stone.png',       // 들판 채집 맵 아이콘
   '돌조각': 'images/gather/stone_chunk.png', // 재료창고 표시
+  '잡목':   'images/gather/jabmok.png',
+  '나뭇가지': 'images/gather/jabmok.png',
   '소나무': 'images/gather/pine.png',
   '철광석': 'images/gather/iron_ore.png',
   '석탄':   'images/gather/coal.png',
@@ -1550,8 +1552,8 @@ const GATHER_POINTS = {
     {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
   ],
   forest: [
-    {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
-    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true, iconH:'190px'},
+    {id:'gf_나뭇가지', name:'잡목', icon:'🪵', skill:'logging', time:5, pos:{x:15,y:70}, skillLvMin:1, noRegen:true, resultName:'나뭇가지', iconH:'190px'},
+    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:75,y:65}, skillLvMin:1, noRegen:true, iconH:'190px'},
   ],
   mountain: [
     {id:'gm_약초',  name:'약초',  icon:'🌿', skill:'gather', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
@@ -5305,6 +5307,12 @@ function cancelGatherMap(){
 }
 
 function exitGatherMap(){
+  // 채집 중이면 현재 채집 완료 후 나가기
+  if(_gather.timer){
+    _gather.stopAfter = true;
+    toast('채집 완료 후 나갑니다...');
+    return;
+  }
   cancelGatherMap();
   document.getElementById('gathermap').style.display = 'none';
   document.getElementById('gather-inv-overlay').style.display = 'none';
@@ -6793,8 +6801,9 @@ function renderMats(){
   entries.forEach(([name,qty])=>{
     const d=document.createElement('div');
     d.style.cssText='display:flex;align-items:center;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.75rem';
-    const img = GATHER_IMAGES && GATHER_IMAGES[name]
-      ? `<img src="${GATHER_IMAGES[name]}" style="width:1.6rem;height:1.6rem;object-fit:contain;flex-shrink:0" draggable="false">`
+    const ITEM_IMAGES = Object.assign({}, GATHER_IMAGES, {'나뭇가지':'images/gather/branch.png'});
+    const img = ITEM_IMAGES[name]
+      ? `<img src="${ITEM_IMAGES[name]}" style="width:1.6rem;height:1.6rem;object-fit:contain;flex-shrink:0" draggable="false">`
       : `<span style="font-size:1.1rem;flex-shrink:0">📦</span>`;
     d.innerHTML=`${img}<span style="color:var(--text);flex:1">${name}</span><span style="color:var(--gold2)">${qty}개</span>`;
     el.appendChild(d);
