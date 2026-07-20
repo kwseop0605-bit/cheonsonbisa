@@ -5202,27 +5202,7 @@ function finishGatherPointExec(zoneId, pointId){
   saveGame();
 }
 
-function cancelGatherMap(){
-  if(mapGatherTimer){ clearInterval(mapGatherTimer); mapGatherTimer = null; }
-  const pid = mapGatherPointId || _gatherPointId2;
-  mapGatherPointId = null; _gatherPointId2 = '';
-  const el = pid ? document.getElementById(gmpId(pid)) : null;
-  if(el){
-    el.style.animation = '';
-    const bw = el.querySelector('.gmp-bar-wrap');
-    if(bw) bw.remove();
-  }
-  // noRegen 포인트면 상태를 ready로 복원 (다시 클릭 가능)
-  if(pid && G.gatherPointState[pid]){
-    G.gatherPointState[pid] = {status:'ready'};
-  }
-}
-
-function exitGatherMap(){
-  cancelGatherMap();
-  document.getElementById('gathermap').style.display = 'none';
-  document.getElementById('gather-inv-overlay').style.display = 'none';
-}
+// exitGatherMap, cancelGatherMap → gather.js에서 처리
 
 function toggleGatherInv(){
   const ov = document.getElementById('gather-inv-overlay');
