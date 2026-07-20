@@ -349,13 +349,9 @@ function runTutorialStep(){
     showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
 
   } else if(step.action === 'wait_ssuk'){
-    // 쑥 10개 채집 대기 - 다음버튼은 대화창만 닫음, tutStep 증가 없음
-    showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
-      btn.classList.add('show');
-      btn.onclick = ()=>{
-        btn.classList.remove('show');
-        btn.onclick = tutorialNext;
+    // 쑥 10개 채집 대기
+    const ssukCnt = (G.mats['쑥']||0) + (G.inventory.filter(i=>i&&i.name==='쑥').reduce((s,i)=>s+(i.qty||1),0));
+    const _startSsukWait = ()=>{
         document.getElementById('tutorial-dialog').classList.remove('show');
         showGatherArrow();
         const gBtn = document.querySelectorAll('.tab-btn')[1];
@@ -395,14 +391,25 @@ function runTutorialStep(){
             }, 300);
           }
         }, 1000);
-      };
-    });
+    };
+    // 이미 채집 시작한 적 있으면 대화 건너뛰기
+    if(ssukCnt > 0){
+      _startSsukWait();
+    } else {
+      showDialog(step, ()=>{
+        const btn = document.getElementById('tutorial-next');
+        btn.classList.add('show');
+        btn.onclick = ()=>{
+          btn.classList.remove('show');
+          btn.onclick = tutorialNext;
+          _startSsukWait();
+        };
+      });
+    }
 
   } else if(step.action === 'wait_logging'){
-    showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
-      btn.classList.add('show');
-      btn.onclick = ()=>{
+    const logCnt0 = G.mats['나뭇가지']||0;
+    const _startLogWait = ()=>{
         document.getElementById('tutorial-dialog').classList.remove('show');
         showGatherArrow();
         const gBtn = document.querySelectorAll('.tab-btn')[1];
@@ -439,14 +446,24 @@ function runTutorialStep(){
             }, 300);
           }
         }, 1000);
-      };
-    });
+    };
+    if(logCnt0 > 0){
+      _startLogWait();
+    } else {
+      showDialog(step, ()=>{
+        const btn = document.getElementById('tutorial-next');
+        btn.classList.add('show');
+        btn.onclick = ()=>{
+          btn.classList.remove('show');
+          btn.onclick = tutorialNext;
+          _startLogWait();
+        };
+      });
+    }
 
   } else if(step.action === 'wait_mining'){
-    showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
-      btn.classList.add('show');
-      btn.onclick = ()=>{
+    const mineCnt0 = G.mats['철광석']||0;
+    const _startMineWait = ()=>{
         document.getElementById('tutorial-dialog').classList.remove('show');
         showGatherArrow();
         const gBtn = document.querySelectorAll('.tab-btn')[1];
@@ -483,8 +500,20 @@ function runTutorialStep(){
             }, 300);
           }
         }, 1000);
-      };
-    });
+    };
+    if(mineCnt0 > 0){
+      _startMineWait();
+    } else {
+      showDialog(step, ()=>{
+        const btn = document.getElementById('tutorial-next');
+        btn.classList.add('show');
+        btn.onclick = ()=>{
+          btn.classList.remove('show');
+          btn.onclick = tutorialNext;
+          _startMineWait();
+        };
+      });
+    }
 
   } else if(step.action === 'give_homi_recipe'){
     addToInventory({name:'돌호미 제작서', icon:'📖', type:'recipe', recipeId:'tool_homi', desc:'돌호미 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
