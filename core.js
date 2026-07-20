@@ -226,13 +226,9 @@ function startGame(){
   if(!G.buildings) G.buildings = {};
   // 기본 도구 지급 — 튜토리얼 미완료 시에만 startGame에서 지급하지 않음
   // (튜토리얼에서 불메장이가 지급함. 단 튜토리얼 완료 후 재접속 시 도구 없으면 지급)
+  // 튜토리얼 완료 체크
   if(G.tutorialDone){
-    const hasHomi = G.inventory.some(i=>i&&i.name==='호미');
-    const hasPick = G.inventory.some(i=>i&&i.name==='곡괭이');
-    const hasAxe  = G.inventory.some(i=>i&&i.name==='도끼');
-    if(!hasHomi) addToInventory({name:'호미',   icon:'images/tools/homi.png',    type:'tool', skill:'gather',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-    if(!hasPick) addToInventory({name:'곡괭이', icon:'images/tools/pickaxe.png', type:'tool', skill:'mining',  dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
-    if(!hasAxe)  addToInventory({name:'도끼',   icon:'images/tools/axe.png',     type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
+    // 파손된 도구는 재지급하지 않음 (대장간에서 제작해야 함)
   }
   // 재료창고에 실수로 들어간 도구 제거
   ['호미','곡괭이','도끼'].forEach(n=>{ if(G.mats[n]) delete G.mats[n]; });
@@ -253,9 +249,8 @@ function startGame(){
   if(!G.berrySlots) G.berrySlots = [null,null];
   renderZoneList(); renderSkillList(); renderInv(); renderChar(); renderQuests(); renderGatherZoneList(); renderBuildings(); renderToolShop(); renderVillage();
   toast(`${G.char.name}, 천명을 받아들이다!`);
-  // 새 캐릭터면 튜토리얼 시작
+  // 새 캐릭터면 튜토리얼 시작 (대화창은 startTutorial 안에서 show)
   if(!G.tutorialDone){
-    document.getElementById('tutorial-dialog').classList.add('show');
     _tutorialStartTimer = setTimeout(startTutorial, 1200);
   }
 
