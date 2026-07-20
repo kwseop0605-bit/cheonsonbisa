@@ -249,6 +249,7 @@ function gatherFinish(zoneId, pointId){
         setTimeout(()=>{ 
           gatherStop();
           document.getElementById('gathermap').style.display = 'none';
+          document.getElementById('tabs').style.display = 'flex';
           const ov = document.getElementById('gather-inv-overlay');
           if(ov) ov.style.display = 'none';
         }, 200);
@@ -271,6 +272,7 @@ function gatherFinish(zoneId, pointId){
       setTimeout(()=>{
         gatherStop();
         document.getElementById('gathermap').style.display = 'none';
+        document.getElementById('tabs').style.display = 'flex';
         const ov = document.getElementById('gather-inv-overlay');
         if(ov) ov.style.display = 'none';
       }, 200);
@@ -321,6 +323,7 @@ function exitGatherMap(){
   }
   gatherStop();
   document.getElementById('gathermap').style.display = 'none';
+  document.getElementById('tabs').style.display = 'flex'; // 탭바 복원
   const ov = document.getElementById('gather-inv-overlay');
   if(ov) ov.style.display = 'none';
 }
