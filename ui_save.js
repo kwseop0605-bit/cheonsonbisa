@@ -23,8 +23,7 @@ function showTab(id){
   closeCtxMenu();
   const fullmap = document.getElementById('fullmap');
   if(fullmap && fullmap.style.display !== 'none') exitFullMap();
-  const gathermap = document.getElementById('gathermap');
-  if(gathermap && gathermap.style.display !== 'none') exitGatherMap();
+  // 채집터는 나가기 버튼으로만 닫음 (showTab에서 닫지 않음)
   // 마을 탭 전환 시 건물 패널 닫기
   if(id==='village') closeBuildingPanel();
   if(id==='hunt'){
