@@ -9,7 +9,7 @@
 function showTab(id){
   // 채집터가 열려있을 때는 탭 전환 차단 (나가기 버튼으로만 나감)
   const gm = document.getElementById('gathermap');
-  if(gm && gm.style.display !== 'none' && _gather && _gather.timer){
+  if(gm && gm.style.display !== 'none'){
     return;
   }
   document.querySelectorAll('.content-area').forEach(e=>e.classList.remove('active'));
