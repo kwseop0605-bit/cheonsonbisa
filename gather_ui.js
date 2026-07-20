@@ -286,7 +286,7 @@ function openGatherMap(zone, startPointId){
 
   const gm = document.getElementById('gathermap');
   gm.style.display = 'block';
-  document.getElementById('tabs').style.display = 'none'; // 탭바 숨기기
+  _gather.mapOpen = true;
   document.getElementById('gm-title').textContent = zone.name;
   updateGatherSkillHUD();
   const bgImg = document.getElementById('gmap-bg-img');

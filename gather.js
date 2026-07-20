@@ -1,5 +1,5 @@
 // ── 천손비사 채집 시스템 모듈 (gather.js) ──────────────────────────────
-// 채집/벌목/채광 자동채집 전담 모듈
+// 채집/벌목/채광 자동채집 전담 모듈 (전면 재작성)
 
 const _gather = {
   timer: null,
@@ -9,40 +9,50 @@ const _gather = {
   total: 5000,
   sessionId: 0,
   stopAfter: false,
-  nextPointId: null,  // 다음에 채집할 포인트 대기열
-  clickCount: 0,
-  clickWindowStart: 0,
+  nextPointId: null,
+  mapOpen: false,     // 채집터 열림 상태
 };
 
-// ── 채집 시작 ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════
+// 채집터 열기/닫기 - 탭바 제어 포함
+// ═══════════════════════════════════════
+function openGatherMapUI(){
+  _gather.mapOpen = true;
+}
+
+function closeGatherMapUI(){
+  _gather.mapOpen = false;
+  document.getElementById('gathermap').style.display = 'none';
+  const ov = document.getElementById('gather-inv-overlay');
+  if(ov) ov.style.display = 'none';
+}
+
+// ═══════════════════════════════════════
+// 채집 시작
+// ═══════════════════════════════════════
 function gatherStart(zoneId, pointId){
-  // 기존 채집 중단
-  gatherStop(false);
+  gatherStop();
 
   const pts = GATHER_POINTS[zoneId] || [];
   const pt = pts.find(p => p.id === pointId);
   if(!pt) return;
 
-  // 리젠 중 체크
   const state = G.gatherPointState[pt.id] || {status:'ready'};
   if(state.status === 'regen' && Date.now() < state.endTime){
     toast('리젠 중입니다!');
     return;
   }
 
-  // 광산 층 체크
   if(zoneId === 'mine' && G.mineFloor && pt.skillLvMin !== G.mineFloor){
     toast('이 층의 광석이 아닙니다!');
     return;
   }
 
-  // 채광 스킬 체크
   if(pt.skill === 'mining' && !(G.lifeSkills && G.lifeSkills['mining'])){
     showGatherAlert('채광 스킬이 없습니다!', '마을 → 신단수 퀘스트에서\n채광 스킬을 받으세요.');
     return;
   }
 
-  // ── 도구 체크 ──
   const toolMap = {gather:'호미', mining:'곡괭이', logging:'도끼'};
   const toolMapAlt = {gather:'돌호미', mining:'돌곡괭이', logging:'돌도끼'};
   const needTool = toolMap[pt.skill];
@@ -70,7 +80,6 @@ function gatherStart(zoneId, pointId){
     return;
   }
 
-  // ── 채집 시작 ──
   _gather.pointId = pointId;
   _gather.zoneId = zoneId;
   _gather.remaining = 5000;
@@ -79,10 +88,8 @@ function gatherStart(zoneId, pointId){
   _gather.nextPointId = null;
   _gather.sessionId++;
 
-  // 게이지 표시
   const el = document.getElementById(gmpId(pointId));
   if(el){
-    // 기존 게이지 제거 후 새로 추가
     let bar = el.querySelector('.gmp-bar-wrap');
     if(bar) bar.remove();
     bar = document.createElement('div');
@@ -95,7 +102,6 @@ function gatherStart(zoneId, pointId){
     el.appendChild(bar);
   }
 
-  // 타이머 시작
   _gather.timer = setInterval(()=>{
     _gather.remaining = Math.max(0, _gather.remaining - 300);
     const pct = 100 - (_gather.remaining / _gather.total * 100);
@@ -112,10 +118,12 @@ function gatherStart(zoneId, pointId){
   }, 300);
 }
 
-// ── 채집 중단 ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════
+// 채집 중단
+// ═══════════════════════════════════════
 function gatherStop(){
   if(_gather.timer){ clearInterval(_gather.timer); _gather.timer = null; }
-  _gather.sessionId++; // 세션 ID 바꿔서 진행 중인 재시작 차단
+  _gather.sessionId++;
 
   const pid = _gather.pointId;
   if(pid){
@@ -134,9 +142,10 @@ function gatherStop(){
   _gatherPointId2 = '';
 }
 
-// ── 채집 완료 ──────────────────────────────────────────────────────────
+// ═══════════════════════════════════════
+// 채집 완료
+// ═══════════════════════════════════════
 function gatherFinish(zoneId, pointId){
-  // 게이지 제거
   const finEl = document.getElementById(gmpId(pointId));
   if(finEl){ const bw=finEl.querySelector('.gmp-bar-wrap'); if(bw) bw.remove(); }
 
@@ -144,11 +153,11 @@ function gatherFinish(zoneId, pointId){
   const pt = pts.find(p => p.id === pointId);
   if(!pt) return;
 
+  const _exitAfter = _gather.stopAfter && _gather._wantsExit;
   const sk = G.gatherSkills[pt.skill] || {lv:1, xp:0};
 
-  // ── 아이템 획득 ──
+  // 아이템 획득
   if(pt.fixedQty){
-    // 열매 처리
     const existing = G.inventory.find(x=>x&&x.name===pt.name&&x.type==='berry');
     if(existing){ existing.qty = Math.min(999, (existing.qty||1)+1); }
     else { addToInventory({name:pt.name, icon:pt.icon, type:'berry', qty:1}); }
@@ -159,7 +168,6 @@ function gatherFinish(zoneId, pointId){
     const qty = getGatherQty(curXp, sk.lv, pt.skillLvMin);
     const matName = pt.resultName || pt.name;
     G.mats[matName] = (G.mats[matName]||0) + qty;
-    // 최초 채집 역사 기록
     if(!G.gatherStats) G.gatherStats={itemCount:{},totalGather:0,firstTime:{}};
     if(!G.gatherStats.firstTime) G.gatherStats.firstTime = {};
     G.gatherStats.itemCount[pt.name] = (G.gatherStats.itemCount[pt.name]||0) + qty;
@@ -172,7 +180,7 @@ function gatherFinish(zoneId, pointId){
     toast('✅ ' + (pt.icon||'') + ' ' + matName + ' ×' + qty + ' 획득!');
   }
 
-  // ── 도구 내구도 소모 ──
+  // 도구 내구도 소모
   const toolName = {gather:'호미', mining:'곡괭이', logging:'도끼'}[pt.skill];
   const toolNameAlt = {gather:'돌호미', mining:'돌곡괭이', logging:'돌도끼'}[pt.skill];
   if(toolName){
@@ -191,7 +199,7 @@ function gatherFinish(zoneId, pointId){
     }
   }
 
-  // ── 숙련도/레벨업 ──
+  // 숙련도/레벨업
   if(!G.gatherSkills[pt.skill]) G.gatherSkills[pt.skill]={lv:1,xp:0};
   G.gatherSkills[pt.skill].xp = (G.gatherSkills[pt.skill].xp||0) + 1;
   if(G.gatherSkills[pt.skill].xp >= 100){
@@ -204,14 +212,13 @@ function gatherFinish(zoneId, pointId){
     updateGatherHUD && updateGatherHUD();
   }
 
-  // ── 화면 갱신 ──
   renderMats();
   renderSkillList();
   updateGatherSkillHUD && updateGatherSkillHUD();
-  updateQuestHUD && updateQuestHUD();
+  if(typeof updateQuestHUD === 'function') updateQuestHUD();
   saveGame();
 
-  // ── noRegen 자동 재시작 ──
+  // ── 완료 후 처리 ──
   if(pt.noRegen){
     G.gatherPointState[pointId] = {status:'ready'};
     _gather.pointId = null;
@@ -222,6 +229,14 @@ function gatherFinish(zoneId, pointId){
     if(el2) el2.style.display = 'flex';
     if(G.curGatherZone) renderGatherItemList(G.curGatherZone);
 
+    // 나가기 요청이면 바로 나감
+    if(_exitAfter){
+      _gather.stopAfter = false;
+      _gather._wantsExit = false;
+      setTimeout(closeGatherMapUI, 200);
+      return;
+    }
+
     const mySession = _gather.sessionId;
     const savedZoneId = zoneId;
     const savedPointId = pointId;
@@ -229,30 +244,26 @@ function gatherFinish(zoneId, pointId){
     setTimeout(()=>{
       if(_gather.sessionId !== mySession) return;
       if(!G.curGatherZone) return;
-      if(document.getElementById('gathermap')?.style.display === 'none') return;
-      // 대기열에 다음 포인트가 있으면 그것을 채집
+      if(!_gather.mapOpen) return;
+
       if(_gather.nextPointId){
         const nextId = _gather.nextPointId;
         _gather.nextPointId = null;
         gatherStart(savedZoneId, nextId);
       } else if(!_gather.stopAfter){
-        // 대기열 없고 stopAfter 아니면 같은 포인트 반복
+        // 튜토리얼 중 목표 수량 달성 시 중단
+        if(G && !G.tutorialDone){
+          const ssukDone = (G.mats['쑥']||0) >= 10;
+          const logDone = (G.mats['나뭇가지']||0) >= 10;
+          const mineDone = (G.mats['철광석']||0) >= 10;
+          if((savedZoneId==='field' && ssukDone) ||
+             (savedZoneId==='forest' && logDone) ||
+             (savedZoneId==='mine' && mineDone)) return;
+        }
         gatherStart(savedZoneId, savedPointId);
       } else {
-        // stopAfter → 자동채집만 멈춤 (채집터에 남아있음)
+        // stopAfter → 자동채집만 멈춤
         _gather.stopAfter = false;
-      }
-      // 나가기 요청이 있었으면 채집 완료 후 나감
-      if(_gather._exitRequested){
-        _gather._exitRequested = false;
-        _gather.stopAfter = false;
-        setTimeout(()=>{ 
-          gatherStop();
-          document.getElementById('gathermap').style.display = 'none';
-          document.getElementById('tabs').style.display = 'flex';
-          const ov = document.getElementById('gather-inv-overlay');
-          if(ov) ov.style.display = 'none';
-        }, 200);
       }
     }, 300);
   } else {
@@ -265,17 +276,11 @@ function gatherFinish(zoneId, pointId){
     if(el){ el.style.display='none'; el.style.animation=''; const bw=el.querySelector('.gmp-bar-wrap'); if(bw) bw.remove(); }
     if(G.curGatherZone) renderGatherItemList(G.curGatherZone);
 
-    // 나가기 요청이 있었으면 채집 완료 후 나감
-    if(_gather._exitRequested){
-      _gather._exitRequested = false;
+    // 나가기 요청이면 바로 나감
+    if(_exitAfter){
       _gather.stopAfter = false;
-      setTimeout(()=>{
-        gatherStop();
-        document.getElementById('gathermap').style.display = 'none';
-        document.getElementById('tabs').style.display = 'flex';
-        const ov = document.getElementById('gather-inv-overlay');
-        if(ov) ov.style.display = 'none';
-      }, 200);
+      _gather._wantsExit = false;
+      setTimeout(closeGatherMapUI, 200);
       return;
     }
 
@@ -294,13 +299,11 @@ function gatherFinish(zoneId, pointId){
   }
 }
 
-// ── 스페이스/클릭으로 채집 단축 ───────────────────────────────────────
+// ═══════════════════════════════════════
+// 스페이스키 채집 단축
+// ═══════════════════════════════════════
 function gatherBoost(){
   if(!_gather.timer) return;
-  const now = Date.now();
-  if(now - _gather.clickWindowStart > 1000){ _gather.clickCount=0; _gather.clickWindowStart=now; }
-  if(_gather.clickCount >= 2) return;
-  _gather.clickCount++;
   _gather.remaining = Math.max(0, _gather.remaining - 500);
   const pct = 100 - (_gather.remaining / _gather.total * 100);
   const ptEl = document.getElementById(gmpId(_gather.pointId));
@@ -311,19 +314,44 @@ function gatherBoost(){
   }
 }
 
-// 하위 호환용 래퍼
+// ═══════════════════════════════════════
+// 외부 호출용
+// ═══════════════════════════════════════
 function startGatherPointExec(zoneId, pointId){ gatherStart(zoneId, pointId); }
 function cancelGatherMap(){ gatherStop(); }
+
 function exitGatherMap(){
-  // 채집 중이면 완료 후 나가기
   if(_gather.timer){
-    _gather._exitRequested = true;
+    // 채집 중이면 완료 후 나가기
+    _gather.stopAfter = true;
+    _gather._wantsExit = true;
     toast('채집 완료 후 나갑니다...');
     return;
   }
   gatherStop();
-  document.getElementById('gathermap').style.display = 'none';
-  document.getElementById('tabs').style.display = 'flex'; // 탭바 복원
-  const ov = document.getElementById('gather-inv-overlay');
-  if(ov) ov.style.display = 'none';
+  closeGatherMapUI();
 }
+
+// ═══════════════════════════════════════
+// 채집터 클릭 이벤트 차단 (초기화 시 1회 실행)
+// ═══════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  const gm = document.getElementById('gathermap');
+  if(!gm) return;
+
+  // 채집터 빈 곳 클릭 시 자동채집 멈춤 (이벤트 전파 차단)
+  gm.addEventListener('click', (e)=>{
+    // 채집 포인트나 버튼 클릭은 무시 (자체 핸들러가 있음)
+    if(e.target.closest('.gmp-item') || e.target.closest('button') || e.target.closest('.gmp-bar-wrap')){
+      return;
+    }
+    // 채집 중이면 자동채집만 멈춤
+    if(_gather.timer){
+      _gather.stopAfter = true;
+    }
+    // 이벤트 전파 완전 차단
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+    e.preventDefault();
+  }, true); // capture phase로 먼저 잡음
+});
