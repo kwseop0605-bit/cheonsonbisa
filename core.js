@@ -252,6 +252,8 @@ function startGame(){
   // 새 캐릭터면 튜토리얼 시작 (대화창은 startTutorial 안에서 show)
   if(!G.tutorialDone){
     _tutorialStartTimer = setTimeout(startTutorial, 1200);
+  } else {
+    document.getElementById('tutorial-dialog').style.display = 'none';
   }
 
   // ── HP/MP 자동 회복 타이머 ──

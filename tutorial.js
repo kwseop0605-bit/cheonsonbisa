@@ -677,7 +677,10 @@ function hideGatherArrow(){
 // 튜토리얼 시작
 // ═══════════════════════════════════════════════════════
 function startTutorial(){
-  if(G.tutorialDone) return;
+  if(G.tutorialDone){
+    document.getElementById('tutorial-dialog').style.display = 'none';
+    return;
+  }
   tutStep = G.tutorialStep || 0;
   tutWaiting = false;
   showTab('village');
@@ -701,7 +704,9 @@ function endTutorial(){
   document.getElementById('tutorial-overlay').classList.remove('active');
   document.getElementById('tutorial-dim').classList.remove('show');
   document.getElementById('shindansu-light').classList.remove('show');
-  document.getElementById('tutorial-dialog').classList.remove('show');
+  const dlg = document.getElementById('tutorial-dialog');
+  dlg.classList.remove('show');
+  dlg.style.display = 'none'; // 완전히 숨김
   document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
   const nextBtn = document.getElementById('tutorial-next');
