@@ -65,7 +65,7 @@ document.addEventListener('click', function(e){
   if(!_tutorialAllowedEl) return;
   if(G && G.tutorialDone){ _tutorialAllowedEl = null; return; }
   if(_tutorialAllowedEl.contains(e.target) || _tutorialAllowedEl === e.target) return;
-  const dialog = document.getElementById('tutorial-dialog');
+  const dialog = document.getElementById('quest-dialog');
   if(dialog && dialog.contains(e.target)) return;
   e.stopPropagation();
   e.preventDefault();
@@ -133,9 +133,9 @@ function advanceTutStep(){
 // ═══════════════════════════════════════════════════════
 function typeText(text, onDone){
   if(tutTyping) clearInterval(tutTyping);
-  const el = document.getElementById('tutorial-text-inner');
+  const el = document.getElementById('quest-text-inner');
   el.innerHTML = '';
-  document.getElementById('tutorial-next').classList.remove('show');
+  document.getElementById('quest-next').classList.remove('show');
   const processedText = text.replace(/\n/g, '<br>');
   if(processedText.includes('<')){
     el.innerHTML = processedText;
@@ -161,17 +161,17 @@ function tutorialNext(){
   if(tutTyping){
     clearInterval(tutTyping); tutTyping = null;
     const step = TUTORIAL_STEPS[tutStep];
-    const el = document.getElementById('tutorial-text-inner');
+    const el = document.getElementById('quest-text-inner');
     const text = (step.text||'').replace('{name}', G.char.name||'천손');
     if(text.includes('\n') || text.includes('<')){
       el.innerHTML = text.replace(/\n/g,'<br>');
     } else {
       el.textContent = text;
     }
-    document.getElementById('tutorial-next').classList.add('show');
+    document.getElementById('quest-next').classList.add('show');
     return;
   }
-  document.getElementById('tutorial-next').classList.remove('show');
+  document.getElementById('quest-next').classList.remove('show');
   advanceTutStep();
   runTutorialStep();
 }
@@ -180,13 +180,13 @@ function tutorialNext(){
 // 대화창 표시 헬퍼
 // ═══════════════════════════════════════════════════════
 function showDialog(step, onDone){
-  document.getElementById('tutorial-dialog').classList.add('show');
-  document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
+  document.getElementById('quest-dialog').classList.add('show');
+  document.getElementById('quest-speaker').textContent = step.speaker || '신단수';
   typeText((step.text||'').replace('{name}', G.char.name||'천손'), onDone);
 }
 
 function showNextBtn(callback){
-  const btn = document.getElementById('tutorial-next');
+  const btn = document.getElementById('quest-next');
   btn.classList.add('show');
   btn.onclick = ()=>{
     btn.classList.remove('show');
@@ -205,22 +205,22 @@ function runTutorialStep(){
   // trigger 단계: 특정 행동(건물 클릭 등) 대기 - 여기서 return
   if(step.trigger){ return; }
 
-  document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
+  document.getElementById('quest-speaker').textContent = step.speaker || '신단수';
 
   // ── 액션별 처리 ──
   if(step.action === 'shindansu_light'){
     document.getElementById('shindansu-light').classList.add('show');
     playShindansuSound();
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'go_forge'){
     showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
+      const btn = document.getElementById('quest-next');
       btn.classList.add('show');
       btn.onclick = ()=>{
         btn.classList.remove('show');
         btn.onclick = tutorialNext;
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         advanceTutStep(); // forge trigger 스텝으로
         _showForgeArrow();
       };
@@ -238,17 +238,17 @@ function runTutorialStep(){
       toast('🎁 호미, 곡괭이, 도끼를 받았습니다!');
       saveGame();
     }
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'wait_equip_homi'){
     // 호미 착용 대기 - 다음버튼은 advanceTutStep 없이 대화창만 닫음
     showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
+      const btn = document.getElementById('quest-next');
       btn.classList.add('show');
       btn.onclick = ()=>{
         btn.classList.remove('show');
         btn.onclick = tutorialNext;
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         showInvArrow();
         const invBtn = document.querySelectorAll('.tab-btn')[4];
         if(invBtn){ setTutLock(invBtn); invBtn.addEventListener('click', ()=>clearTutLock(), {once:true}); }
@@ -275,14 +275,14 @@ function runTutorialStep(){
   } else if(step.action === 'wait_equip_all'){
     // 곡괭이+도끼 착용 대기
     showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
+      const btn = document.getElementById('quest-next');
       btn.classList.add('show');
       setTutLock(btn);
       btn.onclick = ()=>{
         clearTutLock();
         btn.onclick = tutorialNext;
         btn.classList.remove('show');
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         showInvArrow();
         tutWaiting = true;
         if(_waitEquipAllTimer) clearInterval(_waitEquipAllTimer);
@@ -311,12 +311,12 @@ function runTutorialStep(){
 
   } else if(step.action === 'go_shindansu'){
     showDialog(step, ()=>{
-      const btn = document.getElementById('tutorial-next');
+      const btn = document.getElementById('quest-next');
       btn.classList.add('show');
       btn.onclick = ()=>{
         btn.classList.remove('show');
         btn.onclick = tutorialNext;
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         advanceTutStep(); // shindansu_return trigger 스텝으로
         closeBuildingPanel && closeBuildingPanel();
         showTab('village');
@@ -332,27 +332,27 @@ function runTutorialStep(){
     G.lifeSkills['gather'] = true;
     saveGame();
     toast('🌿 채집 스킬을 습득했습니다!');
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'give_logging_skill'){
     if(!G.lifeSkills) G.lifeSkills = {};
     G.lifeSkills['logging'] = true;
     saveGame();
     toast('🪓 벌목 스킬을 습득했습니다!');
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'give_mining_skill'){
     if(!G.lifeSkills) G.lifeSkills = {};
     G.lifeSkills['mining'] = true;
     saveGame();
     toast('⛏ 채광 스킬을 습득했습니다!');
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'wait_ssuk'){
     // 쑥 10개 채집 대기
     const ssukCnt = (G.mats['쑥']||0) + (G.inventory.filter(i=>i&&i.name==='쑥').reduce((s,i)=>s+(i.qty||1),0));
     const _startSsukWait = ()=>{
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         showGatherArrow();
         const gBtn = document.querySelectorAll('.tab-btn')[1];
         if(gBtn){ setTutLock(gBtn); gBtn.addEventListener('click', ()=>clearTutLock(), {once:true}); }
@@ -397,7 +397,7 @@ function runTutorialStep(){
       _startSsukWait();
     } else {
       showDialog(step, ()=>{
-        const btn = document.getElementById('tutorial-next');
+        const btn = document.getElementById('quest-next');
         btn.classList.add('show');
         btn.onclick = ()=>{
           btn.classList.remove('show');
@@ -410,7 +410,7 @@ function runTutorialStep(){
   } else if(step.action === 'wait_logging'){
     const logCnt0 = G.mats['나뭇가지']||0;
     const _startLogWait = ()=>{
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         showGatherArrow();
         const gBtn = document.querySelectorAll('.tab-btn')[1];
         if(gBtn){ setTutLock(gBtn); gBtn.addEventListener('click', ()=>clearTutLock(), {once:true}); }
@@ -451,7 +451,7 @@ function runTutorialStep(){
       _startLogWait();
     } else {
       showDialog(step, ()=>{
-        const btn = document.getElementById('tutorial-next');
+        const btn = document.getElementById('quest-next');
         btn.classList.add('show');
         btn.onclick = ()=>{
           btn.classList.remove('show');
@@ -464,7 +464,7 @@ function runTutorialStep(){
   } else if(step.action === 'wait_mining'){
     const mineCnt0 = G.mats['철광석']||0;
     const _startMineWait = ()=>{
-        document.getElementById('tutorial-dialog').classList.remove('show');
+        document.getElementById('quest-dialog').classList.remove('show');
         showGatherArrow();
         const gBtn = document.querySelectorAll('.tab-btn')[1];
         if(gBtn){ setTutLock(gBtn); gBtn.addEventListener('click', ()=>clearTutLock(), {once:true}); }
@@ -505,7 +505,7 @@ function runTutorialStep(){
       _startMineWait();
     } else {
       showDialog(step, ()=>{
-        const btn = document.getElementById('tutorial-next');
+        const btn = document.getElementById('quest-next');
         btn.classList.add('show');
         btn.onclick = ()=>{
           btn.classList.remove('show');
@@ -519,19 +519,19 @@ function runTutorialStep(){
     addToInventory({name:'돌호미 제작서', icon:'📖', type:'recipe', recipeId:'tool_homi', desc:'돌호미 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
     saveGame();
     toast('📖 돌호미 제작서를 받았습니다!');
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'give_axe_recipe'){
     addToInventory({name:'돌도끼 제작서', icon:'📖', type:'recipe', recipeId:'tool_axe', desc:'돌도끼 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
     saveGame();
     toast('📖 돌도끼 제작서를 받았습니다!');
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'give_pickaxe_recipe'){
     addToInventory({name:'돌곡괭이 제작서', icon:'📖', type:'recipe', recipeId:'tool_pickaxe', desc:'돌곡괭이 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
     saveGame();
     toast('📖 돌곡괭이 제작서를 받았습니다!');
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
 
   } else if(step.action === 'end_tutorial'){
     // 즉시 tutorialDone 저장 (딜레이 전에 먼저)
@@ -550,7 +550,7 @@ function runTutorialStep(){
 
   } else {
     // action 없는 일반 대화
-    showDialog(step, ()=>{ document.getElementById('tutorial-next').classList.add('show'); });
+    showDialog(step, ()=>{ document.getElementById('quest-next').classList.add('show'); });
   }
 }
 
@@ -580,10 +580,10 @@ function tutorialTrigger(trigger){
   }
 
   // 대화 표시 후 다음 버튼으로 advanceTutStep
-  document.getElementById('tutorial-dialog').classList.add('show');
-  document.getElementById('tutorial-speaker').textContent = step.speaker || '신단수';
+  document.getElementById('quest-dialog').classList.add('show');
+  document.getElementById('quest-speaker').textContent = step.speaker || '신단수';
   typeText((step.text||'').replace('{name}', G.char.name||'천손'), ()=>{
-    const btn = document.getElementById('tutorial-next');
+    const btn = document.getElementById('quest-next');
     btn.classList.add('show');
     btn.onclick = ()=>{
       btn.classList.remove('show');
@@ -678,19 +678,21 @@ function hideGatherArrow(){
 // ═══════════════════════════════════════════════════════
 function startTutorial(){
   if(G.tutorialDone){
-    document.getElementById('tutorial-dialog').style.display = 'none';
+    document.getElementById('quest-dialog').style.display = 'none';
     return;
   }
   tutStep = G.tutorialStep || 0;
   tutWaiting = false;
   showTab('village');
   const hasCompletedBefore = localStorage.getItem('cheonson_tutorial_done') === 'true';
-  const skipBtn = document.getElementById('tutorial-skip-btn');
+  const skipBtn = document.getElementById('quest-skip-btn');
   if(skipBtn) skipBtn.style.display = hasCompletedBefore ? 'inline-block' : 'none';
   _tutorialStartTimer = setTimeout(()=>{
     _tutorialStartTimer = null;
     document.getElementById('tutorial-overlay').classList.add('active');
-    document.getElementById('tutorial-dialog').classList.add('show');
+    const dlg = document.getElementById('quest-dialog');
+    dlg.style.display = ''; // display:none 해제
+    dlg.classList.add('show');
     updateQuestHUD();
     runTutorialStep();
   }, 800);
@@ -704,12 +706,12 @@ function endTutorial(){
   document.getElementById('tutorial-overlay').classList.remove('active');
   document.getElementById('tutorial-dim').classList.remove('show');
   document.getElementById('shindansu-light').classList.remove('show');
-  const dlg = document.getElementById('tutorial-dialog');
+  const dlg = document.getElementById('quest-dialog');
   dlg.classList.remove('show');
   dlg.style.display = 'none'; // 완전히 숨김
   document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
-  const nextBtn = document.getElementById('tutorial-next');
+  const nextBtn = document.getElementById('quest-next');
   if(nextBtn){ nextBtn.onclick = tutorialNext; nextBtn.classList.remove('show'); }
   if(!G.tutorialDone) toast('✨ 튜토리얼 완료! 천손의 여정이 시작됩니다.');
 }
@@ -719,7 +721,7 @@ function endTutorial(){
 // ═══════════════════════════════════════════════════════
 function skipTutorial(){
   if(!confirm('튜토리얼을 건너뛰시겠습니까?\n(도구는 자동으로 지급됩니다)')) return;
-  document.getElementById('tutorial-dialog').classList.remove('show');
+  document.getElementById('quest-dialog').classList.remove('show');
   clearTutLock();
   if(_tutorialStartTimer){ clearTimeout(_tutorialStartTimer); _tutorialStartTimer = null; }
   if(_waitEquipTimer){ clearInterval(_waitEquipTimer); _waitEquipTimer = null; }

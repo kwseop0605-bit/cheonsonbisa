@@ -253,7 +253,7 @@ function startGame(){
   if(!G.tutorialDone){
     _tutorialStartTimer = setTimeout(startTutorial, 1200);
   } else {
-    document.getElementById('tutorial-dialog').style.display = 'none';
+    document.getElementById('quest-dialog').style.display = 'none';
   }
 
   // ── HP/MP 자동 회복 타이머 ──
