@@ -75,7 +75,6 @@ function autoSelectMonster(){
 
 function startBattle(idx){
   if(curMonIdx===idx) return;
-  // 채집 중이면 전투 불가
   if(mapGatherTimer){ toast('채집 중에는 전투를 시작할 수 없습니다!'); return; }
   if(battleTimer){clearInterval(battleTimer);battleTimer=null;}
   if(enemyTimer){clearInterval(enemyTimer);enemyTimer=null;}
@@ -88,9 +87,11 @@ function startBattle(idx){
   if(!autoBattle) addLog('💡 내공 스킬은 직접 클릭하세요!');
 
   updateFmHUD(); renderFmMonsters(); renderFmSkills();
-  updateFmExitBtn(); // 도망 버튼으로 변경
+  updateFmExitBtn();
 
-  // 플레이어 공격 타이머 (1초 후 첫 공격, 이후 2초마다)
+  // 캐릭터를 몬스터 앞으로 이동
+  movePlayerToMonster(idx);
+
   setTimeout(()=>{
     if(curMonIdx!==idx) return;
     const zid2=G.curZone.id+'_'+G.curMonType.id;
@@ -108,7 +109,6 @@ function startBattle(idx){
     },2000);
   },1000);
 
-  // 몬스터 반격 타이머 (1초 후 첫 반격, 이후 2초마다)
   setTimeout(()=>{
     if(curMonIdx!==idx) return;
     const zid2=G.curZone.id+'_'+G.curMonType.id;
@@ -524,6 +524,8 @@ function onKill(idx){
 
   m.regenLeft = m.isBoss ? 0 : 10;
   curMonIdx=-1;
+  // 캐릭터 원위치 복귀
+  returnPlayerToBase();
   // 처치한 몬스터 즉시 숨김
   const deadWrap=document.getElementById(`fm-mon-${idx}`);
   if(deadWrap) deadWrap.style.display='none';

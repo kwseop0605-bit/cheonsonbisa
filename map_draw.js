@@ -615,39 +615,54 @@ function renderFmSkills(){
 }
 
 // 공격 이펙트 (캐릭터 → 몬스터 방향으로 번쩍임)
-function showAttackEffect(monIdx, isCrit){
-  const zid=G.curZone.id+'_'+G.curMonType.id;
-  const pos=FM_MON_POS[monIdx]||{x:50,y:30};
-  const W=1920, H=1080; // 고정 디자인 해상도 기준
-  const px=pos.x/100*W, py=pos.y/100*H;
-
-  // 캐릭터 → 몬스터 앞까지 이동 → 공격 → 복귀
-  const player=document.getElementById('fm-player');
-  const baseX=10, baseY=62;
-  // 몬스터 왼쪽 앞 위치 (몬스터 x에서 약간 왼쪽)
-  const targetX = pos.x - 8;
-  const targetY = pos.y;
-
-  // 1단계: 몬스터 앞으로 이동 (0.2초)
-  player.style.transition='left .2s ease-in, top .2s ease-in';
+// 캐릭터를 몬스터 앞으로 이동
+function movePlayerToMonster(monIdx){
+  const pos = FM_MON_POS[monIdx] || {x:50, y:50};
+  const player = document.getElementById('fm-player');
+  if(!player) return;
+  const targetX = pos.x - 10; // 몬스터 왼쪽 앞
+  const targetY = pos.y + 2;  // 약간 아래 (발 위치 맞춤)
+  player.style.transition = 'left .4s ease-out, top .4s ease-out';
   player.style.left = targetX + '%';
   player.style.top = targetY + '%';
+}
 
-  // 2단계: 이동 완료 후 이펙트 표시 (0.2초 후)
-  setTimeout(()=>{
-    const eff=document.getElementById('fm-effect');
-    eff.style.cssText=`position:absolute;left:${px}px;top:${py}px;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:${isCrit?'2rem':'1.5rem'};animation:eff-pop .4s ease-out forwards;z-index:20`;
-    eff.textContent=isCrit?'💥':'⚡';
-    eff.style.display='flex';
-    setTimeout(()=>eff.style.display='none',400);
-  }, 200);
+// 캐릭터 원위치 복귀
+function returnPlayerToBase(){
+  const player = document.getElementById('fm-player');
+  if(!player) return;
+  player.style.transition = 'left .3s ease-in, top .3s ease-in';
+  player.style.left = '10%';
+  player.style.top = '62%';
+}
 
-  // 3단계: 원래 위치로 복귀 (0.45초 후)
-  setTimeout(()=>{
-    player.style.transition='left .25s ease-out, top .25s ease-out';
-    player.style.left=baseX+'%';
-    player.style.top=baseY+'%';
-  }, 450);
+// 공격 이펙트 + 무기 휘두르기 애니메이션
+function showAttackEffect(monIdx, isCrit){
+  const pos = FM_MON_POS[monIdx] || {x:50, y:50};
+  const W = 1920, H = 1080;
+  const px = pos.x / 100 * W, py = pos.y / 100 * H;
+
+  // 이펙트 표시
+  const eff = document.getElementById('fm-effect');
+  eff.style.cssText = `position:absolute;left:${px}px;top:${py}px;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:${isCrit?'2.5rem':'1.8rem'};animation:eff-pop .4s ease-out forwards;z-index:20`;
+  eff.textContent = isCrit ? '💥' : '⚡';
+  eff.style.display = 'flex';
+  setTimeout(() => eff.style.display = 'none', 400);
+
+  // 캐릭터 공격 모션 (앞으로 찌르기)
+  const player = document.getElementById('fm-player');
+  if(!player) return;
+  const curLeft = parseFloat(player.style.left) || 10;
+  const curTop = parseFloat(player.style.top) || 62;
+  // 빠르게 몬스터 쪽으로 3% 전진 후 복귀
+  player.style.transition = 'left .1s ease-in, top .1s ease-in';
+  player.style.left = (curLeft + 3) + '%';
+  player.style.top = (curTop - 1) + '%';
+  setTimeout(() => {
+    player.style.transition = 'left .15s ease-out, top .15s ease-out';
+    player.style.left = curLeft + '%';
+    player.style.top = curTop + '%';
+  }, 120);
 }
 
 function exitFullMap(){
