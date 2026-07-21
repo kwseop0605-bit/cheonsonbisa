@@ -33,8 +33,15 @@ const GATHER_POINTS = {
     {id:'gm_더덕',  name:'더덕',  icon:'🌱', skill:'gather', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true},
   ],
   mine: [
-    {id:'mn_철광석', name:'철광석', icon:'⚙️', skill:'mining', time:5, pos:{x:30,y:50}, skillLvMin:1, noRegen:true},
-    {id:'mn_석탄',   name:'석탄',   icon:'🖤', skill:'mining', time:5, pos:{x:55,y:45}, skillLvMin:1, noRegen:true},
+    // 1층 (지표층) - index 0~1
+    {id:'mn_철광석', name:'철광석', icon:'⚙️', skill:'mining', time:5, pos:{x:30,y:25}, skillLvMin:1, noRegen:true, iconH:'190px'},
+    {id:'mn_석탄',   name:'석탄',   icon:'🖤', skill:'mining', time:5, pos:{x:65,y:25}, skillLvMin:1, noRegen:true, iconH:'190px'},
+    // 2층 (중층) - index 2~3
+    {id:'mn_구리광석', name:'구리광석', icon:'🔶', skill:'mining', time:7, pos:{x:30,y:55}, skillLvMin:2, noRegen:true, iconH:'190px'},
+    {id:'mn_은광석',   name:'은광석',   icon:'🪙', skill:'mining', time:8, pos:{x:65,y:55}, skillLvMin:2, noRegen:true, iconH:'190px'},
+    // 3층 (심층) - index 4~5
+    {id:'mn_수정',   name:'수정',   icon:'💎', skill:'mining', time:10, pos:{x:30,y:82}, skillLvMin:3, noRegen:true, iconH:'190px'},
+    {id:'mn_금광석', name:'금광석', icon:'✨', skill:'mining', time:12, pos:{x:65,y:82}, skillLvMin:3, noRegen:true, iconH:'190px'},
   ],
 };
 

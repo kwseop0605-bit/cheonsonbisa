@@ -120,9 +120,9 @@ function selectMinFloor(){
 
   // 층별 광물 정보
   const floors = [
-    {label:'1층 (지표층)', desc:'⚙️철광석 · 🖤석탄', yRange:[0, 0.44], pts: GATHER_POINTS['mine'].filter((_,i)=>i<10)},
-    {label:'2층 (중층)',   desc:'🔶구리광석 · 🪙은광석', yRange:[0.44, 0.70], pts: GATHER_POINTS['mine'].filter((_,i)=>i>=10&&i<20)},
-    {label:'3층 (심층)',   desc:'💎수정 · ✨금광석', yRange:[0.70, 1.0], pts: GATHER_POINTS['mine'].filter((_,i)=>i>=20)},
+    {label:'1층 (지표층)', desc:'⚙️철광석 · 🖤석탄', yRange:[0, 0.44], pts: GATHER_POINTS['mine'].filter((_,i)=>i<2)},
+    {label:'2층 (중층)',   desc:'🔶구리광석 · 🪙은광석', yRange:[0.44, 0.70], pts: GATHER_POINTS['mine'].filter((_,i)=>i>=2&&i<4)},
+    {label:'3층 (심층)',   desc:'💎수정 · ✨금광석', yRange:[0.70, 1.0], pts: GATHER_POINTS['mine'].filter((_,i)=>i>=4)},
   ];
 
   overlay.innerHTML = `
