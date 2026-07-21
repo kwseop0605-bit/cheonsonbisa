@@ -198,7 +198,8 @@ function startGame(){
   if(typeof ZONE_BG !== 'undefined' && ZONE_BG.gather_select){
     document.documentElement.style.setProperty('--gather-select-bg', `url('${ZONE_BG.gather_select}')`);
   }
-  document.getElementById('game').classList.add('show');
+  document.getElementById('game-scale-wrap').classList.add('show');
+  fitScaleWrap();
   // 항상 zone 선택 화면부터 시작
   document.getElementById('view-zone').style.display='block';
   document.getElementById('view-mtype').style.display='none';

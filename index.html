@@ -53,7 +53,9 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 .create-option-desc{font-size:.68rem;color:var(--text3);margin-top:.2rem}
 
 /* 메인 게임 */
-#game{display:none;flex-direction:column;height:100vh;width:100vw}
+#game-scale-wrap{position:fixed;top:0;left:0;width:100vw;height:100vh;overflow:hidden;display:none;background:#000}
+#game-scale-wrap.show{display:block}
+#game{display:flex;flex-direction:column;width:1920px;height:1080px;position:absolute;top:0;left:0;transform-origin:top left}
 #game.show{display:flex}
 
 /* HUD */
@@ -309,6 +311,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 </div>
 
 <!-- 메인 게임 -->
+<div id="game-scale-wrap">
 <div id="game">
   <div id="hud">
     <div class="hud-title">天孫秘史</div>
@@ -1032,5 +1035,6 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 <script src="village.js"></script>
 <script src="ui_save.js"></script>
 <script src="tutorial.js"></script>
+</div><!-- /#game-scale-wrap -->
 </body>
 </html>
