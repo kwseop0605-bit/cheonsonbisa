@@ -21,7 +21,7 @@ const GATHER_ZONES = [
 const GATHER_POINTS = {
   meadow: [
     {id:'gp_쑥',    name:'쑥',    icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
-    {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:22,y:70}, skillLvMin:1, noRegen:true, hiddenIcon:true},
+    {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:72,y:40}, skillLvMin:1, noRegen:true, hiddenIcon:true},
     {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
   ],
   forest: [
