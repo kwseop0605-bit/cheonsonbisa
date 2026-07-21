@@ -902,8 +902,8 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 
 <!-- 전체화면 채집터 맵 -->
 <div id="gathermap" style="display:none;position:fixed;inset:0;z-index:500;overflow:hidden;background:#000">
-  <canvas id="gmap-canvas" style="position:absolute;inset:0;width:100%;height:100%"></canvas>
-  <img id="gmap-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
+  <canvas id="gmap-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
+  <img id="gmap-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none"/>
 
   <!-- 채집터 내 인벤토리 오버레이 -->
   <div id="gather-inv-overlay" style="display:none;position:absolute;top:0;right:0;bottom:0;width:320px;max-width:90vw;background:rgba(10,7,3,.97);border-left:2px solid var(--border2);z-index:600;overflow-y:auto;padding:.8rem" onclick="event.stopPropagation()">
