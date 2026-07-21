@@ -16,7 +16,7 @@ const ZONE_BG = {
   gather_select: 'images/bg/gather_select.jpg',
 
   field: "images/bg/field.jpg",
-  // forest: "data:image/jpeg;base64,...",
+  forest: "images/bg/forest.jpg",
   // deep: "data:image/jpeg;base64,...",
   mine: 'images/bg/mine.jpg',};
 
