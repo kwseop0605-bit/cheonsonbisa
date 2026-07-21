@@ -677,10 +677,7 @@ function hideGatherArrow(){
 // 튜토리얼 시작
 // ═══════════════════════════════════════════════════════
 function startTutorial(){
-  if(G.tutorialDone){
-    document.getElementById('quest-dialog').style.display = 'none';
-    return;
-  }
+  if(G.tutorialDone) return;
   tutStep = G.tutorialStep || 0;
   tutWaiting = false;
   showTab('village');
@@ -690,9 +687,7 @@ function startTutorial(){
   _tutorialStartTimer = setTimeout(()=>{
     _tutorialStartTimer = null;
     document.getElementById('tutorial-overlay').classList.add('active');
-    const dlg = document.getElementById('quest-dialog');
-    dlg.style.display = ''; // display:none 해제
-    dlg.classList.add('show');
+    document.getElementById('quest-dialog').classList.add('show');
     updateQuestHUD();
     runTutorialStep();
   }, 800);
@@ -707,8 +702,7 @@ function endTutorial(){
   document.getElementById('tutorial-dim').classList.remove('show');
   document.getElementById('shindansu-light').classList.remove('show');
   const dlg = document.getElementById('quest-dialog');
-  dlg.classList.remove('show');
-  dlg.style.display = 'none'; // 완전히 숨김
+  dlg.classList.remove('show'); // CSS가 display:none 처리
   document.querySelectorAll('.village-btn').forEach(b=>b.style.animation='');
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
   const nextBtn = document.getElementById('quest-next');

@@ -89,13 +89,13 @@
 #tutorial-dim.show{background:rgba(0,0,0,0.45)}
 /* 대화창 */
 #quest-dialog{
+  display:none;
   position:fixed;bottom:0;left:0;right:0;
   background:linear-gradient(135deg,rgba(10,6,2,0.97),rgba(20,12,4,0.97));
   border-top:2px solid #c9922a;padding:1.2rem 2rem 1.4rem;
-  transform:translateY(100%);transition:transform .5s ease;
   z-index:8100;min-height:130px;
 }
-#quest-dialog.show{transform:translateY(0)}
+#quest-dialog.show{display:block}
 #quest-speaker{font-size:.8rem;color:#c9922a;font-weight:700;letter-spacing:.1em;margin-bottom:.4rem}
 #quest-text{font-size:1rem;color:#f0e6c8;line-height:1.8;min-height:3rem}
 #quest-cursor{display:inline-block;animation:blink .7s infinite;color:#c9922a;margin-left:4px}

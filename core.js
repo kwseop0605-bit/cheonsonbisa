@@ -249,11 +249,9 @@ function startGame(){
   if(!G.berrySlots) G.berrySlots = [null,null];
   renderZoneList(); renderSkillList(); renderInv(); renderChar(); renderQuests(); renderGatherZoneList(); renderBuildings(); renderToolShop(); renderVillage();
   toast(`${G.char.name}, 천명을 받아들이다!`);
-  // 새 캐릭터면 튜토리얼 시작 (대화창은 startTutorial 안에서 show)
+  // 새 캐릭터면 튜토리얼 시작 (대화창은 startTutorial 안에서 .show 추가)
   if(!G.tutorialDone){
     _tutorialStartTimer = setTimeout(startTutorial, 1200);
-  } else {
-    document.getElementById('quest-dialog').style.display = 'none';
   }
 
   // ── HP/MP 자동 회복 타이머 ──
