@@ -618,27 +618,36 @@ function renderFmSkills(){
 function showAttackEffect(monIdx, isCrit){
   const zid=G.curZone.id+'_'+G.curMonType.id;
   const pos=FM_MON_POS[monIdx]||{x:50,y:30};
-  const W=window.innerWidth, H=window.innerHeight;
+  const W=1920, H=1080; // 고정 디자인 해상도 기준
   const px=pos.x/100*W, py=pos.y/100*H;
 
-  const eff=document.getElementById('fm-effect');
-  eff.style.cssText=`position:absolute;left:${px}px;top:${py}px;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:${isCrit?'2rem':'1.5rem'};animation:eff-pop .4s ease-out forwards;z-index:20`;
-  eff.textContent=isCrit?'💥':'⚡';
-  eff.style.display='flex';
-  setTimeout(()=>eff.style.display='none',400);
-
-  // 캐릭터 → 몬스터 방향 이동 애니메이션
+  // 캐릭터 → 몬스터 앞까지 이동 → 공격 → 복귀
   const player=document.getElementById('fm-player');
   const baseX=10, baseY=62;
-  const midX=baseX+(pos.x-baseX)*0.3;
-  const midY=baseY+(pos.y-baseY)*0.3;
-  player.style.transition='left .15s,top .15s';
-  player.style.left=midX+'%';
-  player.style.top=midY+'%';
+  // 몬스터 왼쪽 앞 위치 (몬스터 x에서 약간 왼쪽)
+  const targetX = pos.x - 8;
+  const targetY = pos.y;
+
+  // 1단계: 몬스터 앞으로 이동 (0.2초)
+  player.style.transition='left .2s ease-in, top .2s ease-in';
+  player.style.left = targetX + '%';
+  player.style.top = targetY + '%';
+
+  // 2단계: 이동 완료 후 이펙트 표시 (0.2초 후)
   setTimeout(()=>{
+    const eff=document.getElementById('fm-effect');
+    eff.style.cssText=`position:absolute;left:${px}px;top:${py}px;transform:translate(-50%,-50%);pointer-events:none;display:flex;align-items:center;justify-content:center;font-size:${isCrit?'2rem':'1.5rem'};animation:eff-pop .4s ease-out forwards;z-index:20`;
+    eff.textContent=isCrit?'💥':'⚡';
+    eff.style.display='flex';
+    setTimeout(()=>eff.style.display='none',400);
+  }, 200);
+
+  // 3단계: 원래 위치로 복귀 (0.45초 후)
+  setTimeout(()=>{
+    player.style.transition='left .25s ease-out, top .25s ease-out';
     player.style.left=baseX+'%';
     player.style.top=baseY+'%';
-  },200);
+  }, 450);
 }
 
 function exitFullMap(){
