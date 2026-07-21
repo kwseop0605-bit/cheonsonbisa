@@ -787,7 +787,10 @@ function giveToolRecipes(){
 // 기타 유틸
 // ═══════════════════════════════════════════════════════
 function highlightTabBtn(tabId){
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('tab-highlight'));
+  document.querySelectorAll('.tab-btn').forEach(b=>{
+    b.classList.remove('tab-highlight');
+    b.classList.remove('active'); // 다른 탭의 active 표시 제거
+  });
   const tabs = ['hunt','gather','char','skill','inv','village','build','quest'];
   const idx = tabs.indexOf(tabId);
   if(idx >= 0) document.querySelectorAll('.tab-btn')[idx]?.classList.add('tab-highlight');
