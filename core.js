@@ -1,3 +1,20 @@
+// ═══════════════════════════════════════
+// 화면 스케일 - 1920x1080 고정 디자인을 창 크기에 맞춰 확대/축소
+// ═══════════════════════════════════════
+function fitScaleWrap(){
+  const wrap = document.getElementById('game-scale-wrap');
+  const game = document.getElementById('game');
+  if(!wrap || !game) return;
+  const DESIGN_W = 1920, DESIGN_H = 1080;
+  const ww = wrap.clientWidth, wh = wrap.clientHeight;
+  if(ww <= 0 || wh <= 0) return;
+  const scale = Math.min(ww / DESIGN_W, wh / DESIGN_H);
+  const offsetX = (ww - DESIGN_W * scale) / 2;
+  const offsetY = (wh - DESIGN_H * scale) / 2;
+  game.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${scale})`;
+}
+window.addEventListener('resize', fitScaleWrap);
+
 // ── 천손비사 코어/초기화 모듈 (core.js) ──────────────────
 // cheonson.html에서 분리됨
 
