@@ -22,7 +22,7 @@ const GATHER_POINTS = {
   meadow: [
     {id:'gp_쑥',    name:'쑥',    icon:'🌱', skill:'gather', time:5, pos:{x:14,y:72}, skillLvMin:1, noRegen:true, hiddenIcon:true},
     {id:'gp_감초',  name:'감초',  icon:'🌿', skill:'gather', time:5, pos:{x:27,y:58}, skillLvMin:1, noRegen:true, hiddenIcon:true},
-    {id:'gp_돌광석',name:'돌광석',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
+    {id:'gp_돌무더기',name:'돌무더기',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
   ],
   forest: [
     {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
