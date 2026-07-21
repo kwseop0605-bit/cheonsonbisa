@@ -31,6 +31,8 @@ const CHAR_IMAGES = {
 const GATHER_IMAGES = {
   '쑥':     'images/gather/ssuk.png',
   '돌무더기': 'images/gather/stone.png',       // 들판 채집 맵 아이콘
+  '잡목':   'images/gather/jabmok.png',        // 숲속 채집 맵 클릭 포인트
+  '나뭇가지': 'images/gather/jabmok.png',      // 채집 목록 아이콘
   '돌조각': 'images/gather/stone_chunk.png', // 재료창고 표시
   '소나무': 'images/gather/pine.png',
   '철광석': 'images/gather/iron_ore.png',

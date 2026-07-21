@@ -25,8 +25,8 @@ const GATHER_POINTS = {
     {id:'gp_돌무더기',name:'돌무더기',icon:'🪨', skill:'mining', time:5, pos:{x:55,y:75}, skillLvMin:1, noRegen:true, resultName:'돌조각', iconH:'190px'},
   ],
   forest: [
-    {id:'gf_나뭇가지', name:'나뭇가지', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},
-    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true},
+    {id:'gf_나뭇가지', name:'잡목', icon:'🪵', skill:'logging', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true, resultName:'나뭇가지', iconH:'190px'},
+    {id:'gf_소나무',   name:'소나무',   icon:'🌲', skill:'logging', time:5, pos:{x:45,y:55}, skillLvMin:1, noRegen:true, iconH:'190px'},
   ],
   mountain: [
     {id:'gm_약초',  name:'약초',  icon:'🌿', skill:'gather', time:5, pos:{x:20,y:65}, skillLvMin:1, noRegen:true},

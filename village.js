@@ -830,8 +830,9 @@ function renderMats(){
   entries.forEach(([name,qty])=>{
     const d=document.createElement('div');
     d.style.cssText='display:flex;align-items:center;gap:.5rem;padding:.3rem .4rem;border-bottom:1px solid var(--border);font-size:.75rem';
-    const img = GATHER_IMAGES && GATHER_IMAGES[name]
-      ? `<img src="${GATHER_IMAGES[name]}" style="width:1.6rem;height:1.6rem;object-fit:contain;flex-shrink:0" draggable="false">`
+    const ITEM_IMAGES = Object.assign({}, GATHER_IMAGES, {'나뭇가지':'images/gather/branch.png'});
+    const img = ITEM_IMAGES[name]
+      ? `<img src="${ITEM_IMAGES[name]}" style="width:1.6rem;height:1.6rem;object-fit:contain;flex-shrink:0" draggable="false">`
       : `<span style="font-size:1.1rem;flex-shrink:0">📦</span>`;
     d.innerHTML=`${img}<span style="color:var(--text);flex:1">${name}</span><span style="color:var(--gold2)">${qty}개</span>`;
     el.appendChild(d);
