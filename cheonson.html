@@ -812,12 +812,12 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
     <button class="tab-btn" onclick="showTab('build')"><span class="tab-icon">🏗️</span>건물</button>
     <button class="tab-btn" onclick="showTab('quest')"><span class="tab-icon">📜</span>천명</button>
   </div>
-</div>
+<!-- /game은 quest-panel 뒤에서 닫힘 -->
 
 <div id="toast"></div>
 
 <!-- 전체화면 사냥터 맵 -->
-<div id="fullmap" style="display:none;position:fixed;inset:0;z-index:500;overflow:hidden">
+<div id="fullmap" style="display:none;position:absolute;inset:0;z-index:500;overflow:hidden">
   <!-- 배경 이미지 -->
   <img id="map-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none"/>
   <!-- 배경 캔버스 (이미지 없을 때) -->
@@ -904,7 +904,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 </div>
 
 <!-- 전체화면 채집터 맵 -->
-<div id="gathermap" style="display:none;position:fixed;inset:0;z-index:500;overflow:hidden;background:#000">
+<div id="gathermap" style="display:none;position:absolute;inset:0;z-index:500;overflow:hidden;background:#000">
   <canvas id="gmap-canvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
   <img id="gmap-bg-img" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;pointer-events:none"/>
 
@@ -1035,6 +1035,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);height:
 <script src="village.js"></script>
 <script src="ui_save.js"></script>
 <script src="tutorial.js"></script>
+</div><!-- /#game -->
 </div><!-- /#game-scale-wrap -->
 </body>
 </html>
