@@ -333,25 +333,19 @@ function exitGatherMap(){
 }
 
 // ═══════════════════════════════════════
-// 채집터 클릭 이벤트 차단 (초기화 시 1회 실행)
+// 채집터 빈 곳 클릭 시 자동채집 멈춤
 // ═══════════════════════════════════════
 document.addEventListener('DOMContentLoaded', ()=>{
   const gm = document.getElementById('gathermap');
   if(!gm) return;
 
-  // 채집터 빈 곳 클릭 시 자동채집 멈춤 (이벤트 전파 차단)
+  // bubble phase로 등록 - 채집 포인트 클릭은 stopPropagation으로 여기까지 안 옴
   gm.addEventListener('click', (e)=>{
-    // 채집 포인트나 버튼 클릭은 무시 (자체 핸들러가 있음)
-    if(e.target.closest('.gmp-item') || e.target.closest('button') || e.target.closest('.gmp-bar-wrap')){
-      return;
-    }
+    // 버튼 클릭은 무시
+    if(e.target.closest('button')) return;
     // 채집 중이면 자동채집만 멈춤
     if(_gather.timer){
       _gather.stopAfter = true;
     }
-    // 이벤트 전파 완전 차단
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    e.preventDefault();
-  }, true); // capture phase로 먼저 잡음
+  });
 });
