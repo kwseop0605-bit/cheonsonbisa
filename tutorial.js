@@ -732,10 +732,15 @@ function skipTutorial(){
     addToInventory({name:'도끼', icon:'images/tools/axe.png', type:'tool', skill:'logging', dur:50, maxDur:50, initMaxDur:50, repairCount:0, repairable:false, qty:1});
   G.tutorialDone = true;
   G.tutorialStep = 0;
+  G.givenStartTools = true;
   if(!G.lifeSkills) G.lifeSkills = {};
   G.lifeSkills['gather'] = true;
   G.lifeSkills['logging'] = true;
   G.lifeSkills['mining'] = true;
+  // 제작서 지급
+  addToInventory({name:'돌호미 제작서', icon:'📖', type:'recipe', recipeId:'tool_homi', desc:'돌호미 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
+  addToInventory({name:'돌도끼 제작서', icon:'📖', type:'recipe', recipeId:'tool_axe', desc:'돌도끼 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
+  addToInventory({name:'돌곡괭이 제작서', icon:'📖', type:'recipe', recipeId:'tool_pickaxe', desc:'돌곡괭이 제작법이 담긴 책\n사용하면 제작법을 습득합니다.'});
   giveToolRecipes();
   saveGame();
   hideInvArrow && hideInvArrow();
