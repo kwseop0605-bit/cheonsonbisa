@@ -400,7 +400,7 @@ function enterMonsterMap(monType){
   _updateCrossBtn();
   const zid=G.curZone.id+'_'+monType.id;
   if(!G.zoneMonsters[zid]){
-    G.zoneMonsters[zid]=Array.from({length:10},(_,i)=>({
+    G.zoneMonsters[zid]=Array.from({length:8},(_,i)=>({
       ...monType, hp:monType.maxHp, dead:false, regenLeft:0, idx:i
     }));
   } else {

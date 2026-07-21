@@ -12,17 +12,15 @@
 
 // 몬스터 위치 - 파란선 영역(x:25~95, y:50~78)에 랜덤 분포
 const FM_MON_POS=[
-  // 캐릭터(좌측 ~15%)와 하단 UI를 피해 3줄 배치
-  {x:30, y:28},  // 1번: 뒷줄 좌
-  {x:50, y:25},  // 2번: 뒷줄 중앙
-  {x:70, y:28},  // 3번: 뒷줄 우
-  {x:88, y:30},  // 4번: 뒷줄 맨우
-  {x:25, y:48},  // 5번: 중간줄 좌
-  {x:45, y:45},  // 6번: 중간줄 중앙좌
-  {x:65, y:48},  // 7번: 중간줄 중앙우
-  {x:85, y:45},  // 8번: 중간줄 우
-  {x:35, y:62},  // 9번: 앞줄 좌
-  {x:60, y:60},  // 10번: 앞줄 우
+  // 들판 영역(x:25~92, y:38~80)에 원근감 3줄 배치 (8마리)
+  {x:35, y:40},  // 1번: 뒷줄 좌
+  {x:60, y:38},  // 2번: 뒷줄 중앙
+  {x:85, y:42},  // 3번: 뒷줄 우
+  {x:30, y:55},  // 4번: 중간줄 좌
+  {x:55, y:53},  // 5번: 중간줄 중앙
+  {x:80, y:56},  // 6번: 중간줄 우
+  {x:40, y:70},  // 7번: 앞줄 좌
+  {x:68, y:72},  // 8번: 앞줄 우
 ];
 
 // 열매 빠른 슬롯 렌더링
@@ -509,7 +507,7 @@ function renderFmMonsters(){
   const zid=G.curZone.id+'_'+G.curMonType.id;
   const mons=G.zoneMonsters[zid]||[];
   const alive=mons.filter(m=>!m.dead).length;
-  document.getElementById('fm-counter').textContent=`보스까지 ${G.bossCounter[zid]||0}/50  |  생존 ${alive}/10`;
+  document.getElementById('fm-counter').textContent=`보스까지 ${G.bossCounter[zid]||0}/50  |  생존 ${alive}/8`;
 
   const container=document.getElementById('fm-monsters');
   container.innerHTML='';

@@ -533,7 +533,7 @@ function onKill(idx){
   const alive2=G.zoneMonsters[zid].filter(mon=>!mon.dead).length;
   const moliCount2 = getMoliCount(G.curMonType?.name||'');
   const moliText = moliCount2 > 1 ? `  ⚔${moliCount2}몰이` : '';
-  document.getElementById('fm-counter').textContent=`보스까지 ${bc2}/50  |  생존 ${alive2}/10${moliText}`;
+  document.getElementById('fm-counter').textContent=`보스까지 ${bc2}/50  |  생존 ${alive2}/8${moliText}`;
 
   if(!m.isBoss){
     const t=setInterval(()=>{
