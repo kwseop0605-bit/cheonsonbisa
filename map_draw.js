@@ -620,9 +620,9 @@ function movePlayerToMonster(monIdx){
   const pos = FM_MON_POS[monIdx] || {x:50, y:50};
   const player = document.getElementById('fm-player');
   if(!player) return;
-  const targetX = pos.x - 10; // 몬스터 왼쪽 앞
-  const targetY = pos.y + 2;  // 약간 아래 (발 위치 맞춤)
-  player.style.transition = 'left .4s ease-out, top .4s ease-out';
+  const targetX = pos.x - 5; // 몬스터 바로 옆
+  const targetY = pos.y;
+  player.style.transition = 'left .35s ease-out, top .35s ease-out';
   player.style.left = targetX + '%';
   player.style.top = targetY + '%';
 }
@@ -649,20 +649,23 @@ function showAttackEffect(monIdx, isCrit){
   eff.style.display = 'flex';
   setTimeout(() => eff.style.display = 'none', 400);
 
-  // 캐릭터 공격 모션 (앞으로 찌르기)
+  // 캐릭터 공격 모션 — 몬스터 쪽으로 돌진 + 회전
   const player = document.getElementById('fm-player');
   if(!player) return;
   const curLeft = parseFloat(player.style.left) || 10;
   const curTop = parseFloat(player.style.top) || 62;
-  // 빠르게 몬스터 쪽으로 3% 전진 후 복귀
-  player.style.transition = 'left .1s ease-in, top .1s ease-in';
-  player.style.left = (curLeft + 3) + '%';
-  player.style.top = (curTop - 1) + '%';
+
+  // 1단계: 몬스터 쪽으로 돌진 + 무기 휘두르기(회전)
+  player.style.transition = 'left .08s ease-in, top .08s ease-in, transform .08s ease-in';
+  player.style.left = (curLeft + 5) + '%';
+  player.style.transform = 'translate(-50%,-50%) rotate(15deg)';
+  
+  // 2단계: 원위치 복귀 + 자세 복원
   setTimeout(() => {
-    player.style.transition = 'left .15s ease-out, top .15s ease-out';
+    player.style.transition = 'left .12s ease-out, top .12s ease-out, transform .12s ease-out';
     player.style.left = curLeft + '%';
-    player.style.top = curTop + '%';
-  }, 120);
+    player.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+  }, 100);
 }
 
 function exitFullMap(){
